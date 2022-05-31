@@ -18,11 +18,15 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _tuyaPlugin = TuyaPlugin();
-
+  Map<String,dynamic>? _uuidMap;
+  TextEditingController _accountController = TextEditingController();
+  TextEditingController _pswController = TextEditingController();
   @override
   void initState() {
     super.initState();
     initPlatformState();
+    _tuyaPlugin.startWithKeySercert(key: "df7j7egd344xggr9r589", appSercert: "vapxperxgcdst9cdshjth8tq9xjuxy53");
+
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -54,9 +58,29 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: ListView(
+          children: [
+            TextField(decoration: InputDecoration(
+              hintText: "inout account"
+            ),controller: _accountController,),
+            TextField(controller: _pswController,),
+            Container(child: TextButton(child: Text("选择网络"),onPressed: () async{
+            List<String>? wifis = await _tuyaPlugin.searchWifi();
+            if ((wifis?.length ?? 0) > 0) {
+              showModalBottomSheet(context: context, builder: (context) {
+                return ListView.builder(itemBuilder: (context,index) {
+                  return ListTile(title: Text(wifis![index]),onTap: (){
+                    _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _uuidMap!["uuid"], homeId: _uuidMap!["homeId"],productId: _uuidMap!["productId"],ssid: wifis![index],password: "88888888");
+                  },);
+                });
+              });
+            }
+            },),)
+          ],
         ),
+        floatingActionButton: TextButton(child: Text("初始化登录"),onPressed: () async{
+          _uuidMap = await _tuyaPlugin.loginOrRegisterAccount(countryCode: "86",uid: _accountController.text,password: _pswController.text);
+        },),
       ),
     );
   }

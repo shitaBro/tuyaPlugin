@@ -26,4 +26,26 @@ abstract class TuyaPluginPlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  void startWithKeySercert({required String key,required String appSercert}) {
+    throw UnimplementedError("startWithKeySercert has not been implemented");
+  }
+  Future<Map<String,dynamic>?> loginOrRegisterAccount({required String countryCode,uid,password}) {
+    throw UnimplementedError("loginOrRegisterAccount has not been implemented");
+  }
+  Future<Map<String,dynamic>?> startConfigBLEWifiDeviceWith({required String UUID,productId,ssid,password, required int homeId}) {
+    throw UnimplementedError("startConfigBLEWifiDeviceWith has not been implemented");
+  }
+  Future<List<String>?> searchWifi() {
+    throw UnimplementedError("searchWifi has not been implemented");
+  }
+  Future<bool> removeDevice() {
+    throw UnimplementedError("removeDevice has not been implemented");
+  }
+  Future<bool> resetFactory() {
+    throw UnimplementedError("resetFactory has not been implemented");
+  }
+  Future<bool> sendCommand(Map map) {
+    throw UnimplementedError("sendCommand has not been implemented");
+  }
 }

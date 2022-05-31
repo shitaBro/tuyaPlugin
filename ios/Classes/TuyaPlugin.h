@@ -1,4 +1,4 @@
 #import <Flutter/Flutter.h>
 
-@interface TuyaPlugin : NSObject<FlutterPlugin>
+@interface TuyaPlugin : NSObject<FlutterPlugin,FlutterStreamHandler>
 @end
