@@ -6,9 +6,10 @@
 //
 
 #import "BlueToothManagerDelegate.h"
-static BlueToothManagerDelegate *instance = nil;
+
 @implementation BlueToothManagerDelegate
-+ (instancetype)sharedInstance {
+static BlueToothManagerDelegate *instance = nil;
++ (BlueToothManagerDelegate*)sharedInstance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (instance == nil) {
@@ -21,7 +22,7 @@ static BlueToothManagerDelegate *instance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (instance == nil) {
-            instance = [[self alloc]init];
+            instance = [super allocWithZone:zone];
         }
     });
     return instance;
@@ -44,6 +45,7 @@ static BlueToothManagerDelegate *instance = nil;
 - (void)onCentralDidDisconnectFromDevice:(NSString *)devId error:(NSError *)error {
     NSLog(@"蓝牙设备断连-devid:%@,error:%@",devId,error.description);
 }
+
 
 - (void)bleWifiActivator:(TuyaSmartBLEWifiActivator *)activator didReceiveBLEWifiConfigDevice:(nullable TuyaSmartDeviceModel *)deviceModel error:(nullable NSError *)error {
     NSLog(@"did config device wifi success:%@,error:%@",deviceModel.originJson,error.description);

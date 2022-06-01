@@ -1,4 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:tuya_plugin/tuya_dev_model.dart';
 
 import 'tuya_plugin_method_channel.dart';
 
@@ -30,7 +31,7 @@ abstract class TuyaPluginPlatform extends PlatformInterface {
   void startWithKeySercert({required String key,required String appSercert}) {
     throw UnimplementedError("startWithKeySercert has not been implemented");
   }
-  Future<Map<String,dynamic>?> loginOrRegisterAccount({required String countryCode,uid,password}) {
+  Future<TuyaDevModel?> loginOrRegisterAccount({required String countryCode,required String uid,required String password}) {
     throw UnimplementedError("loginOrRegisterAccount has not been implemented");
   }
   Future<Map<String,dynamic>?> startConfigBLEWifiDeviceWith({required String UUID,productId,ssid,password, required int homeId}) {

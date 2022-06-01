@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:tuya_plugin/tuya_dev_model.dart';
 import 'package:tuya_plugin/tuya_plugin.dart';
 
 void main() {
@@ -18,7 +21,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _tuyaPlugin = TuyaPlugin();
-  Map<String,dynamic>? _uuidMap;
+  TuyaDevModel? _devModel;
   TextEditingController _accountController = TextEditingController();
   TextEditingController _pswController = TextEditingController();
   @override
@@ -70,7 +73,7 @@ class _MyAppState extends State<MyApp> {
               showModalBottomSheet(context: context, builder: (context) {
                 return ListView.builder(itemBuilder: (context,index) {
                   return ListTile(title: Text(wifis![index]),onTap: (){
-                    _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _uuidMap!["uuid"], homeId: _uuidMap!["homeId"],productId: _uuidMap!["productId"],ssid: wifis![index],password: "88888888");
+                    _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _devModel?.uuid ?? "", homeId: _devModel?.homeId ?? 0,productId: _devModel?.productId ?? "",ssid: wifis![index] ,password: "88888888");
                   },);
                 });
               });
@@ -79,7 +82,10 @@ class _MyAppState extends State<MyApp> {
           ],
         ),
         floatingActionButton: TextButton(child: Text("初始化登录"),onPressed: () async{
-          _uuidMap = await _tuyaPlugin.loginOrRegisterAccount(countryCode: "86",uid: _accountController.text,password: _pswController.text);
+
+          _devModel = await _tuyaPlugin.loginOrRegisterAccount(countryCode: "86",uid: _accountController.text,password: _pswController.text);
+          log("devmo:${_devModel?.productId ?? ""},mac:${_devModel?.mac ?? ""}");
+
         },),
       ),
     );

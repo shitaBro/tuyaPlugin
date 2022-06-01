@@ -1,4 +1,6 @@
 
+import 'package:tuya_plugin/tuya_dev_model.dart';
+
 import 'tuya_plugin_platform_interface.dart';
 
 class TuyaPlugin {
@@ -14,7 +16,7 @@ class TuyaPlugin {
   Future<List<String>?> searchWifi() {
     return TuyaPluginPlatform.instance.searchWifi();
   }
-  Future<Map<String,dynamic>?> loginOrRegisterAccount({required String countryCode,uid,password}) {
+  Future<TuyaDevModel?> loginOrRegisterAccount({required String countryCode,required String uid,required String password}) {
     return TuyaPluginPlatform.instance.loginOrRegisterAccount(countryCode: countryCode,uid: uid,password: password);
   }
 

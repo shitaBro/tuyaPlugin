@@ -17,6 +17,7 @@
   TuyaPlugin* instance = [[TuyaPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
     [eventChannel setStreamHandler:instance];
+    
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -24,7 +25,7 @@
     result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
   }else if ([call.method isEqualToString:@"startWithKeySercert"]) {
       [self handleInitSdkCall:call reslut:result];
-  } else if ([call.method isEqualToString:@"loginOrRegisterWithDictionary"]){
+  } else if ([call.method isEqualToString:@"loginOrRegisterAccount"]){
       [self loginOrRegisterAccount:call result:result];
   }else if ([call.method isEqualToString:@"searchWifi"]) {
       [self searchWifi:call result:result];
@@ -45,6 +46,8 @@
     NSString *key = [call.arguments jsonString:@"key"];
     NSString *sercert = [call.arguments jsonString:@"secret"];
     [[TuyaSmartSDK sharedInstance] startWithAppKey:key secretKey:sercert];
+    [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
+    [TuyaSmartActivator  currentWifiSSID];
 }
 - (void)loginOrRegisterAccount:(FlutterMethodCall*)call result:(FlutterResult) result {
     NSString * countryCode = [call.arguments jsonString:@"countryCode"];
@@ -52,7 +55,8 @@
     NSString *password = [call.arguments jsonString:@"password"];
     [[TuyaSmartUser sharedInstance]loginOrRegisterWithCountryCode:countryCode uid:uid password:password createHome:true success:^(id succe) {
         NSLog(@"tuya login success:%@",succe);
-        [[TuyaSmartHome init]getHomeListWithSuccess:^(NSArray<TuyaSmartHomeModel *> *homes) {
+        
+        [[TuyaSmartHomeManager   new]getHomeListWithSuccess:^(NSArray<TuyaSmartHomeModel *> *homes) {
             if (homes.count > 0) {
                
                 _homeId = homes.firstObject.homeId;
@@ -68,7 +72,7 @@
         }];
 }
 - (void)configBlueTooth:(FlutterResult)result {
-    [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
+    
     [BlueToothManagerDelegate sharedInstance].blepowerBlock = ^(BOOL powerOn) {
         
     };

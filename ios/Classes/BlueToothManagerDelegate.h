@@ -15,7 +15,7 @@ typedef void (^BlueToothPowerBlock)(BOOL powerOn);
 @property (nonatomic, copy) BlueToothPowerBlock blepowerBlock;
 @property (nonatomic,copy) void (^modelBlock)(TYBLEAdvModel*);
 @property (nonatomic,copy) void (^configDeviceWifiSuccess)(NSString*);
-+ (instancetype)sharedInstance;
++ (BlueToothManagerDelegate *)sharedInstance;
 @end
 
 NS_ASSUME_NONNULL_END

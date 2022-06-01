@@ -1,13 +1,18 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:tuya_plugin/tuya_dev_model.dart';
 
 import 'tuya_plugin_platform_interface.dart';
 
 /// An implementation of [TuyaPluginPlatform] that uses method channels.
 class MethodChannelTuyaPlugin extends TuyaPluginPlatform {
   /// The method channel used to interact with the native platform.
-  @visibleForTesting
+
   final methodChannel = const MethodChannel('tuya_plugin');
+  
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -15,20 +20,26 @@ class MethodChannelTuyaPlugin extends TuyaPluginPlatform {
         await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
+  @override
+  Future<TuyaDevModel?> loginOrRegisterAccount({required String countryCode,required String uid,required String password}) async{
+    Map? dic = await methodChannel.invokeMapMethod<String,dynamic>("loginOrRegisterAccount",{"countryCode":countryCode,"uid":uid,"password":password});
+    log("devices :${dic}");
+
+    return TuyaDevModel.fromJson( dic?.cast<String,dynamic>() ?? <String,dynamic>{});
+  }
 
   @override
-  startWithKeySercert(
+  void startWithKeySercert(
       {required String key, required String appSercert}) async {
+   
+    log("key:${key},sercert:${appSercert}");
     Map? dic = await methodChannel.invokeMethod<Map>(
         "startWithKeySercert", {"key": key, "secret": appSercert});
 
   }
 
-  @override
-  Future<Map<String,dynamic>?> loginOrRegisterAccount({required String countryCode,uid,password}) async{
-    Map? dic = await methodChannel.invokeMapMethod("loginOrRegisterAccount",{"countryCode":countryCode,"uid":uid,"password":password});
-    return dic?.cast<String,dynamic>();
-  }
+
+
   @override
   Future<List<String>?> searchWifi() async{
     List<String>? arr = await  methodChannel.invokeListMethod("searchWifi");
