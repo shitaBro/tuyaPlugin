@@ -22,7 +22,7 @@ static TuYaPluginDeviceDelegate *instance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (instance == nil) {
-            instance = [[self alloc]init];
+            instance = [super allocWithZone:zone];
         }
     });
     return instance;

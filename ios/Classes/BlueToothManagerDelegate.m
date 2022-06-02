@@ -49,7 +49,12 @@ static BlueToothManagerDelegate *instance = nil;
 
 - (void)bleWifiActivator:(TuyaSmartBLEWifiActivator *)activator didReceiveBLEWifiConfigDevice:(nullable TuyaSmartDeviceModel *)deviceModel error:(nullable NSError *)error {
     NSLog(@"did config device wifi success:%@,error:%@",deviceModel.originJson,error.description);
-    self.configDeviceWifiSuccess(deviceModel.devId);
+    if (error == nil) {
+        self.configDeviceWifiSuccess(deviceModel.devId);
+    }else {
+        NSLog(@"配网代理回调失败");
+    }
+    
 }
 
 @end

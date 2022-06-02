@@ -4,10 +4,16 @@
 #import "BlueToothManagerDelegate.h"
 #import <NetWorkExtension/NetWorkExtension.h>
 #import "TuYaPluginDeviceDelegate.h"
+#import "PluginLocationStatusManager.h"
+
+@interface TuyaPlugin()
+@property(nonatomic, retain) FlutterMethodChannel *channel;
+@end
 @implementation TuyaPlugin {
     FlutterEventSink _eventSink;
     long long _homeId;
     TuyaSmartDevice* _device;
+    CLLocationManager *_locationManager;
 }
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   FlutterMethodChannel* channel = [FlutterMethodChannel
@@ -15,9 +21,11 @@
             binaryMessenger:[registrar messenger]];
     FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"tuya_event" binaryMessenger:[registrar messenger]];
   TuyaPlugin* instance = [[TuyaPlugin alloc] init];
+    instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
     [eventChannel setStreamHandler:instance];
     
+
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -47,7 +55,10 @@
     NSString *sercert = [call.arguments jsonString:@"secret"];
     [[TuyaSmartSDK sharedInstance] startWithAppKey:key secretKey:sercert];
     [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
-    [TuyaSmartActivator  currentWifiSSID];
+    [BlueToothManagerDelegate sharedInstance].modelBlock = ^(TYBLEAdvModel * _Nonnull mo) {
+        [_channel invokeMethod:@"ScanResult" arguments:@{@"homeId":@(_homeId),@"uuid":mo.uuid,@"productId":mo.productId,@"mac":mo.mac,@"isActive":@(mo.isActive),@"bleType":@(mo.bleType),@"isSupport5G":@(mo.isSupport5G),@"isProuductKey":@(mo.isProuductKey),@"bleProtocolV":@(mo.bleProtocolV),@"isQRCodeDevice":@(mo.isQRCodeDevice),@"isSupportMultiUserShare":@(mo.isSupportMultiUserShare)}];
+    };
+    
 }
 - (void)loginOrRegisterAccount:(FlutterMethodCall*)call result:(FlutterResult) result {
     NSString * countryCode = [call.arguments jsonString:@"countryCode"];
@@ -58,9 +69,16 @@
         
         [[TuyaSmartHomeManager   new]getHomeListWithSuccess:^(NSArray<TuyaSmartHomeModel *> *homes) {
             if (homes.count > 0) {
-               
-                _homeId = homes.firstObject.homeId;
-                [self configBlueTooth:result];
+                result(@{@"status":@(true)});
+                self->_homeId = homes.firstObject.homeId;
+                TuyaSmartHome *home = [TuyaSmartHome homeWithHomeId:self->_homeId];
+                NSLog(@"devices :%@",home.deviceList);
+                if ( home.deviceList.count > 0) {
+                    self->_device = home.deviceList.firstObject;
+                }else {
+                    [self configBlueTooth:result];
+                }
+                
             }else {
                 result(@{@"status":@(false),@"msg":@"noHome"});
             }
@@ -76,26 +94,40 @@
     [BlueToothManagerDelegate sharedInstance].blepowerBlock = ^(BOOL powerOn) {
         
     };
-    [BlueToothManagerDelegate sharedInstance].modelBlock = ^(TYBLEAdvModel * _Nonnull mo) {
-        result(@{@"status":@(true),@"device":@{@"homeId":@(_homeId),@"uuid":mo.uuid,@"productId":mo.productId,@"mac":mo.mac,@"isActive":@(mo.isActive),@"bleType":@(mo.bleType),@"isSupport5G":@(mo.isSupport5G),@"isProuductKey":@(mo.isProuductKey),@"bleProtocolV":@(mo.bleProtocolV),@"isQRCodeDevice":@(mo.isQRCodeDevice),@"isSupportMultiUserShare":@(mo.isSupportMultiUserShare)}});
-    };
+    
     [[TuyaSmartBLEManager sharedInstance]startListening:true];
 }
+
 - (void)searchWifi:(FlutterMethodCall*)call result:(FlutterResult) result {
-    NSMutableArray *arr = @[].mutableCopy;
-    dispatch_queue_t queue = dispatch_queue_create("com.leopardpan.HotspotHelper", 0);
-        [NEHotspotHelper registerWithOptions:nil queue:queue handler: ^(NEHotspotHelperCommand * cmd) {
-            //kNEHotspotHelperCommandTypeFilterScanList：表示扫描到 Wifi 列表信息。
-            if(cmd.commandType == kNEHotspotHelperCommandTypeFilterScanList) {
-                //NEHotspotNetwork 里有如下信息：SSID：Wifi 名称；BSSID：站点的 MAC 地址；signalStrength： Wifi信号强度，该值在0.0-1.0之间；secure：网络是否安全 (不需要密码的 Wifi，该值为 false)；autoJoined： 设备是否自动连接该 Wifi，目前测试自动连接以前连过的 Wifi 的也为 false ；justJoined：网络是否刚刚加入；chosenHelper：HotspotHelper是否为网络的所选助手
-                for (NEHotspotNetwork* network  in cmd.networkList) {
-                    NSLog(@"+++++%@",network.SSID);
-                    
-                    [arr addObject:network.SSID];
-                }
-                result(arr);
-            }
-        }];
+    [[PluginLocationStatusManager sharedInstance] startRequestLocationStatus:^(CLAuthorizationStatus status) {
+        if (status == kCLAuthorizationStatusAuthorizedWhenInUse || status == kCLAuthorizationStatusAuthorizedAlways) {
+            [TuyaSmartActivator getSSID:^(NSString *str) {
+                NSLog(@"current wifi ssid:%@",str);
+                result(str);
+            } failure:^(NSError *error) {
+                NSLog(@"get ssid error:%@",error.description);
+                
+            }];
+        }else if (status == kCLAuthorizationStatusDenied) {
+            NSLog(@"请开启定位权限");
+            
+        }
+    }];
+    
+//    NSMutableArray *arr = @[].mutableCopy;
+//    dispatch_queue_t queue = dispatch_queue_create("com.leopardpan.HotspotHelper", 0);
+//        [NEHotspotHelper registerWithOptions:nil queue:queue handler: ^(NEHotspotHelperCommand * cmd) {
+//            //kNEHotspotHelperCommandTypeFilterScanList：表示扫描到 Wifi 列表信息。
+//            if(cmd.commandType == kNEHotspotHelperCommandTypeFilterScanList) {
+//                //NEHotspotNetwork 里有如下信息：SSID：Wifi 名称；BSSID：站点的 MAC 地址；signalStrength： Wifi信号强度，该值在0.0-1.0之间；secure：网络是否安全 (不需要密码的 Wifi，该值为 false)；autoJoined： 设备是否自动连接该 Wifi，目前测试自动连接以前连过的 Wifi 的也为 false ；justJoined：网络是否刚刚加入；chosenHelper：HotspotHelper是否为网络的所选助手
+//                for (NEHotspotNetwork* network  in cmd.networkList) {
+//                    NSLog(@"+++++%@",network.SSID);
+//
+//                    [arr addObject:network.SSID];
+//                }
+//                result(arr);
+//            }
+//        }];
 }
 - (void)startConfigBLEWifiDeviceWith:(FlutterMethodCall*)call result:(FlutterResult) result {
     NSDictionary *dic = call.arguments;
@@ -158,6 +190,15 @@
 - (FlutterError * _Nullable)onListenWithArguments:(id _Nullable)arguments eventSink:(nonnull FlutterEventSink)events {
     _eventSink = events;
     return nil;
+}
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
+    
+}
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+    NSLog(@"location fail:%@",error);
+}
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
+    NSLog(@"location author Status:%d",status);
 }
 
 @end

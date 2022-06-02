@@ -19,43 +19,27 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-  final _tuyaPlugin = TuyaPlugin();
+
+  final _tuyaPlugin = TuyaPlugin.instance;
   TuyaDevModel? _devModel;
   TextEditingController _accountController = TextEditingController();
   TextEditingController _pswController = TextEditingController();
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+
     _tuyaPlugin.startWithKeySercert(key: "df7j7egd344xggr9r589", appSercert: "vapxperxgcdst9cdshjth8tq9xjuxy53");
-
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await _tuyaPlugin.getPlatformVersion() ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
+    _tuyaPlugin.scanResult.stream.listen((event) {
+      log("mo:${event}");
+      _devModel = event;
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -68,23 +52,38 @@ class _MyAppState extends State<MyApp> {
             ),controller: _accountController,),
             TextField(controller: _pswController,),
             Container(child: TextButton(child: Text("选择网络"),onPressed: () async{
-            List<String>? wifis = await _tuyaPlugin.searchWifi();
-            if ((wifis?.length ?? 0) > 0) {
-              showModalBottomSheet(context: context, builder: (context) {
-                return ListView.builder(itemBuilder: (context,index) {
-                  return ListTile(title: Text(wifis![index]),onTap: (){
-                    _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _devModel?.uuid ?? "", homeId: _devModel?.homeId ?? 0,productId: _devModel?.productId ?? "",ssid: wifis![index] ,password: "88888888");
-                  },);
-                });
-              });
+            String? ssid = await _tuyaPlugin.searchWifi();
+            if (ssid?.isNotEmpty == true) {
+              _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _devModel?.uuid ?? "", homeId: _devModel?.homeId ?? 0,productId: _devModel?.productId ?? "",ssid: ssid! ,password: "88888888");
             }
-            },),)
+            },),),
+            Container(
+              child: TextButton(child: Text("普通模式"),onPressed: (){
+                _tuyaPlugin.sendCommand({"2":0});
+              },),
+            ),
+            Container(
+              child: TextButton(child: Text("智能模式"),onPressed: (){
+                _tuyaPlugin.sendCommand({"2":1});
+              },),
+            ),
+            Container(
+              child: TextButton(child: Text("开"),onPressed: (){
+                _tuyaPlugin.sendCommand({"1":bool});
+              },),
+            ),
+            Container(
+              child: TextButton(child: Text("关"),onPressed: (){
+                _tuyaPlugin.sendCommand({"1":false});
+              },),
+            ),
           ],
         ),
         floatingActionButton: TextButton(child: Text("初始化登录"),onPressed: () async{
 
-          _devModel = await _tuyaPlugin.loginOrRegisterAccount(countryCode: "86",uid: _accountController.text,password: _pswController.text);
-          log("devmo:${_devModel?.productId ?? ""},mac:${_devModel?.mac ?? ""}");
+          var dic = await _tuyaPlugin.loginOrRegisterAccount(countryCode: "86",uid: _accountController.text,password: _pswController.text);
+
+
 
         },),
       ),

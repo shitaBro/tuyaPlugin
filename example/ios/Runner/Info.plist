@@ -28,6 +28,14 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>to connect devices</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>to connect devices</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>to connect devices</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>to connect devices</string>
+	<key>NSLocationUsageDescription</key>
+	<string>to connect devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>to connect devices</string>
 	<key>UIBackgroundModes</key>
