@@ -9,6 +9,7 @@
 
 @interface TuyaPlugin()
 @property(nonatomic, retain) FlutterMethodChannel *channel;
+@property (nonatomic,strong) NSArray * boolKeys;
 @end
 @implementation TuyaPlugin {
     FlutterEventSink _eventSink;
@@ -54,6 +55,7 @@
 - (void)handleInitSdkCall:(FlutterMethodCall*)call reslut:(FlutterResult) result {
     NSString *key = [call.arguments jsonString:@"key"];
     NSString *sercert = [call.arguments jsonString:@"secret"];
+    self.boolKeys = [call.arguments jsonArray:@"boolKeys"];
     [[TuyaSmartSDK sharedInstance] startWithAppKey:key secretKey:sercert];
     [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
     [BlueToothManagerDelegate sharedInstance].modelBlock = ^(TYBLEAdvModel * _Nonnull mo) {
@@ -199,12 +201,12 @@
 - (NSMutableDictionary *)handleCommandDic:(NSDictionary*)dic {
     NSMutableDictionary * mdic = [[NSMutableDictionary alloc]init];
     NSString * command = dic.allKeys.firstObject;
-    if ([command isEqualToString:@"1"]  ||[command isEqualToString:@"5"] ||[command isEqualToString:@"6"] ||[command isEqualToString:@"101"] ||[command isEqualToString:@"102"]) {
-        //switch
+    if ([self.boolKeys containsObject:command]) {
         [mdic setValue:@([dic jsonBool:command]) forKey:command];
     }else {
         mdic[command] = dic[command];
     }
+    
     NSLog(@"command change dicc:%@",mdic);
     return mdic;
 }

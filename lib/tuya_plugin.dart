@@ -35,12 +35,14 @@ class TuyaPlugin {
   }
 
 
+ ///初始化方法
+  /// *[boolKeys] 值需要转换成bool的指令
   void startWithKeySercert(
-      {required String key, required String appSercert}) async {
+      {required String key, required String appSercert, required List<String> boolKeys}) async {
 
     log("key:${key},sercert:${appSercert}");
     Map? dic = await _methodChannel.invokeMethod<Map>(
-        "startWithKeySercert", {"key": key, "secret": appSercert});
+        "startWithKeySercert", {"key": key, "secret": appSercert,'boolKeys':boolKeys});
 
   }
 

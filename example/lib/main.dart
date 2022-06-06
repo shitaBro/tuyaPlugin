@@ -28,7 +28,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    _tuyaPlugin.startWithKeySercert(key: "df7j7egd344xggr9r589", appSercert: "vapxperxgcdst9cdshjth8tq9xjuxy53");
+    _tuyaPlugin.startWithKeySercert(key: "df7j7egd344xggr9r589", appSercert: "vapxperxgcdst9cdshjth8tq9xjuxy53",
+    boolKeys: ["1","5","6","101","102"]);
     _tuyaPlugin.scanResult.stream.listen((event) {
       log("mo:${event}");
       _devModel = event;
