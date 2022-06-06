@@ -5,6 +5,7 @@
 #import <NetWorkExtension/NetWorkExtension.h>
 #import "TuYaPluginDeviceDelegate.h"
 #import "PluginLocationStatusManager.h"
+#define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface TuyaPlugin()
 @property(nonatomic, retain) FlutterMethodChannel *channel;
@@ -64,20 +65,29 @@
     NSString * countryCode = [call.arguments jsonString:@"countryCode"];
     NSString * uid = [call.arguments jsonString:@"uid"];
     NSString *password = [call.arguments jsonString:@"password"];
+    WeakSelf
+    __strong typeof(weakSelf) strongSelf = weakSelf;
     [[TuyaSmartUser sharedInstance]loginOrRegisterWithCountryCode:countryCode uid:uid password:password createHome:true success:^(id succe) {
         NSLog(@"tuya login success:%@",succe);
         
         [[TuyaSmartHomeManager   new]getHomeListWithSuccess:^(NSArray<TuyaSmartHomeModel *> *homes) {
+            NSLog(@"涂鸦 homes:%@",homes);
             if (homes.count > 0) {
                 result(@{@"status":@(true)});
                 self->_homeId = homes.firstObject.homeId;
                 TuyaSmartHome *home = [TuyaSmartHome homeWithHomeId:self->_homeId];
-                NSLog(@"devices :%@",home.deviceList);
-                if ( home.deviceList.count > 0) {
-                    self->_device = home.deviceList.firstObject;
-                }else {
-                    [self configBlueTooth:result];
-                }
+                [home getHomeDetailWithSuccess:^(TuyaSmartHomeModel *homeModel) {
+                    [strongSelf configBlueToothNoti:result];
+                    NSLog(@"devices :%@",home.deviceList);
+                    if ( home.deviceList.count > 0) {
+                        strongSelf->_device = [TuyaSmartDevice deviceWithDeviceId:home.deviceList.firstObject.devId];
+                    }
+                    
+                } failure:^(NSError *error) {
+                    NSLog(@"get home info error:%@",error);
+                }];
+                
+                
                 
             }else {
                 result(@{@"status":@(false),@"msg":@"noHome"});
@@ -86,10 +96,11 @@
                     result(@{@"status":@(false),@"msg":error.description});
                 }];
         } failure:^(NSError *error) {
+            NSLog(@"tuya homes erros:%@",error);
             result(@{@"status":@(false),@"msg":error.description});
         }];
 }
-- (void)configBlueTooth:(FlutterResult)result {
+- (void)configBlueToothNoti:(FlutterResult)result {
     
     [BlueToothManagerDelegate sharedInstance].blepowerBlock = ^(BOOL powerOn) {
         
@@ -133,17 +144,20 @@
     NSDictionary *dic = call.arguments;
     [TuyaSmartBLEWifiActivator sharedInstance].bleWifiDelegate = [BlueToothManagerDelegate sharedInstance];
     __block NSString * devId;
+    WeakSelf
+    __strong typeof(weakSelf) strongSelf = weakSelf;
     [BlueToothManagerDelegate sharedInstance].configDeviceWifiSuccess = ^(NSString * _Nonnull devid) {
         devId = devid;
-        self->_device = [TuyaSmartDevice deviceWithDeviceId:devId];
-        [self->_device setOfflineReminderStatus:true success:^(BOOL result) {
-            NSLog(@"设置离线告警成功:%@",result);
+        
+        strongSelf->_device = [TuyaSmartDevice deviceWithDeviceId:devId];
+        [strongSelf->_device setOfflineReminderStatus:true success:^(BOOL result) {
+            NSLog(@"设置离线告警成功:%hhd",result);
                 } failure:^(NSError *error) {
                     NSLog(@"设置离线告警错误：%@",error.description);
                 }];
-        self->_device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
+        strongSelf->_device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
     };
-    [[TuyaSmartBLEWifiActivator sharedInstance] startConfigBLEWifiDeviceWithUUID:[dic jsonString:@"UUID"] homeId:[dic jsonLongLong:@"homeId"] productId:[dic jsonString:@"productId"] ssid:[dic jsonString:@"ssid"] password:[dic jsonString:@"password"] timeout:50 success:^{
+    [[TuyaSmartBLEWifiActivator sharedInstance] startConfigBLEWifiDeviceWithUUID:[dic jsonString:@"UUID"] homeId:[dic jsonLongLong:@"homeId"] productId:[dic jsonString:@"productId"] ssid:[dic jsonString:@"ssid"] password:[dic jsonString:@"password"] timeout:100 success:^{
         NSLog(@"配网成功了");
         result(@{@"status":@true,@"msg":@"配网成功"});
         
@@ -173,7 +187,8 @@
 }
 - (void)sendCommand:(FlutterMethodCall*)call result:(FlutterResult) result {
     NSLog(@"commands:%@",call.arguments);
-    [_device publishDps:call.arguments success:^{
+    NSDictionary *dic = [self handleCommandDic:call.arguments];
+    [_device publishDps:dic success:^{
         NSLog(@"send command success");
         result(@(true));
         } failure:^(NSError *error) {
@@ -181,6 +196,19 @@
             result(@(false));
         }];
 }
+- (NSMutableDictionary *)handleCommandDic:(NSDictionary*)dic {
+    NSMutableDictionary * mdic = [[NSMutableDictionary alloc]init];
+    NSString * command = dic.allKeys.firstObject;
+    if ([command isEqualToString:@"1"]  ||[command isEqualToString:@"5"] ||[command isEqualToString:@"6"] ||[command isEqualToString:@"101"] ||[command isEqualToString:@"102"]) {
+        //switch
+        [mdic setValue:@([dic jsonBool:command]) forKey:command];
+    }else {
+        mdic[command] = dic[command];
+    }
+    NSLog(@"command change dicc:%@",mdic);
+    return mdic;
+}
+
 
 - (FlutterError * _Nullable)onCancelWithArguments:(id _Nullable)arguments {
     _eventSink = nil;

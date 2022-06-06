@@ -12,9 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^BlueToothPowerBlock)(BOOL powerOn);
 
 @interface BlueToothManagerDelegate : NSObject<TuyaSmartBLEManagerDelegate,TuyaSmartBLEWifiActivatorDelegate>
-@property (nonatomic, copy) BlueToothPowerBlock blepowerBlock;
-@property (nonatomic,copy) void (^modelBlock)(TYBLEAdvModel*);
-@property (nonatomic,copy) void (^configDeviceWifiSuccess)(NSString*);
+@property (nonatomic, copy) _Nullable BlueToothPowerBlock blepowerBlock;
+@property (nonatomic,copy) void (^ _Nullable modelBlock)(TYBLEAdvModel*);
+@property (nonatomic,copy) void (^ _Nullable configDeviceWifiSuccess)(NSString*);
 + (BlueToothManagerDelegate *)sharedInstance;
 @end
 

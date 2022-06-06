@@ -67,8 +67,8 @@ class TuyaPlugin {
   @override
   Future<bool> sendCommand(Map map) async{
 
-    bool resu = await _methodChannel.invokeMethod("sendCommand",map);
-    return resu;
+    int? resu = await _methodChannel.invokeMethod("sendCommand",map);
+    return resu == 1;
   }
 
 }
