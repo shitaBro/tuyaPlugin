@@ -9,13 +9,17 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.1.2'
+
     }
 }
 
 rootProject.allprojects {
     repositories {
         google()
-        mavenCentral()
+//        mavenCentral()
+        maven {
+            url "https://maven-other.tuya.com/repository/maven-releases/"
+        }
     }
 }
 
@@ -28,8 +32,21 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
+    packagingOptions {
+        pickFirst 'lib/*/libc++_shared.so' // 多个 AAR（Android Library）文件中存在此 .so 文件，请选择第一个
+    }
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
     }
 }
+dependencies {
+    implementation 'com.alibaba:fastjson:1.1.67.android'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.14.9'
+
+    // App SDK 最新稳定安卓版：
+    implementation 'com.tuya.smart:tuyasmart:3.36.0'
+}
+

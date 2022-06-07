@@ -6,6 +6,7 @@ class TuyaDevModel {
   bool? isActive;
   int? bleType; //TYSmartBLETypeUnknow = 1,
 
+  String? address;
   // TYSmartBLETypeBLE,
   //
   // TYSmartBLETypeBLEPlus,
@@ -41,7 +42,8 @@ class TuyaDevModel {
       this.isProuductKey,
       this.bleProtocolV,
       this.isQRCodeDevice,
-      this.isSupportMultiUserShare});
+      this.isSupportMultiUserShare,
+      this.address});
   TuyaDevModel.fromJson(Map<String, dynamic> json) {
     uuid = json["uuid"].toString();
     productId = json["productId"].toString();
@@ -55,6 +57,7 @@ class TuyaDevModel {
     isSupportMultiUserShare =
         json["isSupportMultiUserShare"].toString() == "1";
     homeId = json["homeId"];
+    address = json["address"].toString();
   }
   Map<String,dynamic> toJson() {
     final Map<String,dynamic> data = new Map<String,dynamic>();
@@ -69,6 +72,7 @@ class TuyaDevModel {
     data["isQRCodeDevice"] = isQRCodeDevice;
     data["isSupportMultiUserShare"] = isSupportMultiUserShare;
     data["homeId"] = homeId;
+    data["address"] = address;
     return data;
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -24,14 +25,20 @@ class _MyAppState extends State<MyApp> {
   TuyaDevModel? _devModel;
   TextEditingController _accountController = TextEditingController(text: "a");
   TextEditingController _pswController = TextEditingController(text: "b");
+  String? _ssid;
   @override
   void initState() {
     super.initState();
-
-    _tuyaPlugin.startWithKeySercert(key: "df7j7egd344xggr9r589", appSercert: "vapxperxgcdst9cdshjth8tq9xjuxy53",
-    boolKeys: ["1","5","6","101","102"]);
+    if (Platform.isIOS) {
+      _tuyaPlugin.startWithKeySercert(key: "df7j7egd344xggr9r589", appSercert: "vapxperxgcdst9cdshjth8tq9xjuxy53",
+          boolKeys: ["1","5","6","101","102"]);
+    }else {
+      _tuyaPlugin.startWithKeySercert(key: "ax83aapssgwp9p83pmqv",
+          appSercert: "44wethtvje5xnv4dyeratvts8d9tng8e", boolKeys: ["1","5","6","101","102"]);
+    }
+    
     _tuyaPlugin.scanResult.stream.listen((event) {
-      log("mo:${event}");
+      log("model:${event}");
       _devModel = event;
     });
   }
@@ -55,11 +62,19 @@ class _MyAppState extends State<MyApp> {
                 hintText: "inout account"
             )),
             Container(child: TextButton(child: Text("选择网络"),onPressed: () async{
-            String? ssid = await _tuyaPlugin.searchWifi();
-            if (ssid?.isNotEmpty == true) {
-              _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _devModel?.uuid ?? "", homeId: _devModel?.homeId ?? 0,productId: _devModel?.productId ?? "",ssid: ssid! ,password: "88888888");
-            }
+            _ssid = await _tuyaPlugin.searchWifi();
+
             },),),
+            Container(
+              child: TextButton(child: Text("开始配网"),onPressed: () {
+                if (_ssid?.isNotEmpty == true) {
+                  log("ssid:${_ssid}");
+                  _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _devModel?.uuid ?? "", homeId: _devModel?.homeId ?? 0,productId:
+                      _devModel?.productId ?? "",ssid: _ssid! ,password: "88888888",bleType: _devModel?.bleType,address:
+                      _devModel?.address,mac: _devModel?.mac);
+                }
+              },),
+            ),
             Container(
               child: TextButton(child: Text("普通模式"),onPressed: (){
                 _tuyaPlugin.sendCommand({"2":"normal"});
@@ -81,13 +96,18 @@ class _MyAppState extends State<MyApp> {
               },),
             ),
             Container(
-              child: TextButton(child: Text("暂停"),onPressed: (){
-                _tuyaPlugin.sendCommand({"101":1});
+              child: TextButton(child: Text("暂停出水"),onPressed: (){
+                _tuyaPlugin.sendCommand({"101":true});
               },),
             ),
              Container(
               child: TextButton(child: Text("开始出水"),onPressed: (){
-                _tuyaPlugin.sendCommand({"101":0});
+                _tuyaPlugin.sendCommand({"101":false});
+              },),
+            ),
+            Container(
+              child: TextButton(child: Text("重置设备"),onPressed: (){
+                _tuyaPlugin.resetFactory();
               },),
             )
           ],

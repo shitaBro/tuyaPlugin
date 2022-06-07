@@ -52,8 +52,18 @@ class TuyaPlugin {
     return ssid;
   }
   @override
-  Future<Map<String,dynamic>?> startConfigBLEWifiDeviceWith({required String UUID,productId,ssid,password, required int homeId}) async{
-    Map? dic = await _methodChannel.invokeMethod<Map>("startConfigBLEWifiDeviceWith",{"UUID":UUID,"password":password,"productId":productId,"ssid":ssid,"homeId":homeId});
+  Future<Map<String,dynamic>?> startConfigBLEWifiDeviceWith({required String
+  UUID,productId,ssid,password, required int homeId,int? bleType,String?
+  address,mac}) async{
+    Map<String,dynamic> data =  {"UUID":UUID,"password":password,"productId":
+    productId,"ssid":ssid,"homeId":homeId};
+    if (bleType != null && address?.isNotEmpty == true) {
+      data["bleType"] = bleType;
+      data["address"] = address!;
+      data["mac"] = mac ?? "";
+    }
+    Map? dic = await _methodChannel.invokeMethod<Map>
+      ("startConfigBLEWifiDeviceWith",data);
     return dic?.cast<String,dynamic>();
   }
   @override
@@ -69,6 +79,7 @@ class TuyaPlugin {
   @override
   Future<bool> sendCommand(Map map) async{
 
+    log("command str ${map}");
     int? resu = await _methodChannel.invokeMethod("sendCommand",map);
     return resu == 1;
   }
