@@ -180,13 +180,19 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
         multiModeActivatorBean.deviceType = (Integer) dic.get("bleType");
         multiModeActivatorBean.uuid = dic.get("UUID").toString();
         multiModeActivatorBean.address = dic.get("address").toString();
-        multiModeActivatorBean.mac = dic.get("mac").toString();
+        String mac =  dic.get("mac").toString();
+        if (mac.isEmpty() == false) {
+          multiModeActivatorBean.mac = mac;
+        }
+
         multiModeActivatorBean.ssid = dic.get("ssid").toString();
+
         multiModeActivatorBean.token = token;
         multiModeActivatorBean.homeId = homeId;
 
         multiModeActivatorBean.pwd = dic.get("password").toString();
         multiModeActivatorBean.timeout = 120000;
+        Log.i("multiModeBean", "bean value: "+multiModeActivatorBean.ssid);
         TuyaHomeSdk.getActivator().newMultiModeActivator().startActivator(multiModeActivatorBean,
                 new IMultiModeActivatorListener() {
                   @Override

@@ -74,7 +74,7 @@ public class WifiUtil implements ActivityCompat.OnRequestPermissionsResultCallba
         sInfo.append("\n\n\n\n");
 
         Log.d("getDetailsWifiInfo", sInfo.toString());
-        return mWifiInfo.getSSID();
+        return mWifiInfo.getSSID().replace("\"","");
     }
 
     // TODO: 2021/9/15 获取附近wifi信号
