@@ -97,12 +97,12 @@ class _MyAppState extends State<MyApp> {
             ),
             Container(
               child: TextButton(child: Text("暂停出水"),onPressed: (){
-                _tuyaPlugin.sendCommand({"101":true});
+                _tuyaPlugin.sendCommand({"101":false});
               },),
             ),
              Container(
               child: TextButton(child: Text("开始出水"),onPressed: (){
-                _tuyaPlugin.sendCommand({"101":false});
+                _tuyaPlugin.sendCommand({"101":true});
               },),
             ),
             Container(
