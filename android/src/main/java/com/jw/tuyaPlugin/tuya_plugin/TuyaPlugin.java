@@ -233,10 +233,12 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
                   @Override
                   public void onSuccess(DeviceBean deviceBean) {
                     Log.i("device set wifi success", "onSuccess: " + deviceBean.toString());
-                    tuyaDevice = TuyaHomeSdk.newDeviceInstance(deviceBean.getDevId());
+                    String devid =  deviceBean.getDevId();
+                    tuyaDevice = TuyaHomeSdk.newDeviceInstance(devid);
                     Map<String,Object> dic = new HashMap<String,Object>();
                     dic.put("status",1);
                     dic.put("msg","配网成功");
+                    dic.put("devId",devid);
                     result.success(dic);
                   }
 
