@@ -47,6 +47,10 @@
       [self resetFactory:call result:result];
   }else if ([call.method isEqualToString:@"sendCommand"]) {
       [self sendCommand:call result:result];
+  }else if ([call.method isEqualToString:@"startSearchDevice"]) {
+      [self startSearchDevice];
+  }else if ([call.method isEqualToString:@"connectDeviceWithId"]) {
+      [self connectDeviceWithId:call result:result];
   }
   else  {
     result(FlutterMethodNotImplemented);
@@ -75,15 +79,28 @@
         [[TuyaSmartHomeManager   new]getHomeListWithSuccess:^(NSArray<TuyaSmartHomeModel *> *homes) {
             NSLog(@"涂鸦 homes:%@",homes);
             if (homes.count > 0) {
-                result(@{@"status":@(true)});
+                
                 self->_homeId = homes.firstObject.homeId;
                 TuyaSmartHome *home = [TuyaSmartHome homeWithHomeId:self->_homeId];
                 [home getHomeDetailWithSuccess:^(TuyaSmartHomeModel *homeModel) {
-                    [strongSelf configBlueToothNoti:result];
-                    NSLog(@"devices :%@",home.deviceList);
+                   
+                    NSLog(@"devices :%@，devid:%@",home.deviceList,home.deviceList.firstObject.devId);
+                    NSMutableDictionary * sdic = @{@"homeId":@(self->_homeId)}.mutableCopy;
+                    NSMutableArray* devices = @[].mutableCopy;
                     if ( home.deviceList.count > 0) {
-                        strongSelf->_device = [TuyaSmartDevice deviceWithDeviceId:home.deviceList.firstObject.devId];
+                        NSMutableDictionary * dic = @{}.mutableCopy;
+                        for (TuyaSmartDeviceModel * dev in home.deviceList) {
+                            dic[@"productId"] = dev.productId;
+                            dic[@"uuid"] = dev.uuid;
+                            dic[@"mac"] = dev.mac;
+                            dic[@"devId"] = dev.devId;
+                            [devices addObject:dic];
+                        }
+                        sdic[@"devices"] = devices;
+                    }else {
+                        
                     }
+                    result(sdic);
                     
                 } failure:^(NSError *error) {
                     NSLog(@"get home info error:%@",error);
@@ -92,23 +109,33 @@
                 
                 
             }else {
-                result(@{@"status":@(false),@"msg":@"noHome"});
+//                result(@{@"status":@(false),@"msg":@"noHome"});
             }
                 } failure:^(NSError *error) {
-                    result(@{@"status":@(false),@"msg":error.description});
+//                    result(@{@"status":@(false),@"msg":error.description});
                 }];
         } failure:^(NSError *error) {
             NSLog(@"tuya homes erros:%@",error);
-            result(@{@"status":@(false),@"msg":error.description});
+//            result(@{@"status":@(false),@"msg":error.description});
         }];
 }
-- (void)configBlueToothNoti:(FlutterResult)result {
-    
+- (void)startSearchDevice {
     [BlueToothManagerDelegate sharedInstance].blepowerBlock = ^(BOOL powerOn) {
         
     };
     
     [[TuyaSmartBLEManager sharedInstance]startListening:true];
+}
+- (void)connectDeviceWithId:(FlutterMethodCall*)call result:(FlutterResult) result {
+    NSString * devid = [call.arguments jsonString:@"devId"];
+    NSLog(@"connect dev id:%@",devid);
+    _device = [TuyaSmartDevice deviceWithDeviceId:devid];
+    if (_device != nil) {
+        result(@(true));
+    }else {
+        result(@(false));
+    }
+    
 }
 
 - (void)searchWifi:(FlutterMethodCall*)call result:(FlutterResult) result {

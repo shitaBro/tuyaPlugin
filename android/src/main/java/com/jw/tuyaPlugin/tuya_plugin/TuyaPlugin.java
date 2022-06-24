@@ -56,6 +56,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   private ITuyaDevice tuyaDevice;
   private List<String> boolKeys;
   private Activity mactivity;
+  private long currentHomeId;
   private String productId; //设备id，第一次配网使用
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -84,11 +85,16 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
     }else if (call.method.equals("sendCommand")) {
 
       sendCommand(call, result);
+    }else if (call.method.equals("startSearchDevice")) {
+      startSearchDevice(call,result);
+    }else if (call.method.equals("connectDeviceWithId")) {
+      connectDeviceWithId(call, result);
     }
     else {
       result.notImplemented();
     }
   }
+
   public void handleInitSdkCall(@NonNull MethodCall call, @NonNull Result result) {
     Map json = (Map)call.arguments;
     Log.i("init tuya sdk", "handleInitSdkCall: " + json);
@@ -102,6 +108,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       @Override
       public void onSuccess(User user, long homeId) {
         Log.i("登录", "user login success homeid: " + homeId);
+        currentHomeId = homeId;
         TuyaHomeSdk.newHomeInstance(homeId).getHomeDetail(new ITuyaHomeResultCallback() {
           @Override
           public void onSuccess(HomeBean bean) {
@@ -110,31 +117,32 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
 
             if (bean.getDeviceList().isEmpty()) {
               //无设备
-              LeScanSetting scanSetting =
-                      new LeScanSetting.Builder().setTimeout(60000).addScanType(ScanType.SINGLE).build();
-              TuyaHomeSdk.getBleOperator().startLeScan(scanSetting, new TyBleScanResponse() {
-                @Override
-                public void onResult(ScanDeviceBean bean) {
-                  Log.i("tuya ble scan ", "onResult: " + bean.toString());
-                  productId = bean.getProductId();
-
-                  Map<String,Object> dic = new HashMap<>();
-                  dic.put("homeId",homeId);
-                  dic.put("uuid",bean.getUuid());
-                  dic.put("productId",productId);
-                  dic.put("mac",bean.getMac());
-                  dic.put("isActive",bean.getIsbind());
-                  dic.put("bleType",bean.getDeviceType());
-                  dic.put("address",bean.getAddress());
-                  channel.invokeMethod("ScanResult",dic);
-                }
-              });
-
+              Map<String,Object> dic = new HashMap<>();
+              dic.put("homeId", homeId);
+              List<Map> devices = new ArrayList<Map>();
+              dic.put("devices",devices);
+              result.success(dic);
             }else {
               //有设备
-              DeviceBean devmo = bean.getDeviceList().get(0);
-              tuyaDevice = TuyaHomeSdk.newDeviceInstance(devmo.devId);
-              tuyaDevice.registerDevListener(new TuyaDevListenser());
+
+              Map<String,Object> sdic = new HashMap<>();
+              sdic.put("homeId", homeId);
+              List<Map> devices = new ArrayList<Map>();
+
+              for (DeviceBean devmo: bean.getDeviceList()
+                   ) {
+                productId = devmo.getProductId();
+
+                Map<String,Object> dic = new HashMap<>();
+
+                dic.put("uuid",devmo.getUuid());
+                dic.put("productId",productId);
+                dic.put("mac",devmo.getMac());
+                dic.put("devId",devmo.getDevId());
+                devices.add(dic);
+              }
+              sdic.put("devices",devices);
+              result.success(sdic);
             }
           }
 
@@ -152,6 +160,33 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       }
     });
 
+  }
+  public void startSearchDevice(@NonNull MethodCall call,@NonNull Result result) {
+    LeScanSetting scanSetting =
+            new LeScanSetting.Builder().setTimeout(60000).addScanType(ScanType.SINGLE).build();
+    TuyaHomeSdk.getBleOperator().startLeScan(scanSetting, new TyBleScanResponse() {
+      @Override
+      public void onResult(ScanDeviceBean bean) {
+        Log.i("tuya ble scan ", "onResult: " + bean.toString());
+        productId = bean.getProductId();
+
+        Map<String,Object> dic = new HashMap<>();
+        dic.put("homeId",currentHomeId);
+        dic.put("uuid",bean.getUuid());
+        dic.put("productId",productId);
+        dic.put("mac",bean.getMac());
+        dic.put("isActive",bean.getIsbind());
+        dic.put("bleType",bean.getDeviceType());
+        dic.put("address",bean.getAddress());
+        channel.invokeMethod("ScanResult",dic);
+      }
+    });
+  }
+  public void connectDeviceWithId(@NonNull MethodCall call,@NonNull Result result) {
+    Map json = (Map)call.arguments;
+    tuyaDevice = TuyaHomeSdk.newDeviceInstance(json.get("devId").toString());
+    tuyaDevice.registerDevListener(new TuyaDevListenser());
+    result.success(tuyaDevice != null);
   }
   public void searchWifi (@NonNull MethodCall call, @NonNull Result result) {
     BluetoothAdapter mbluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

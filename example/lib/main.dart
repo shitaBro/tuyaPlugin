@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -115,7 +116,16 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: TextButton(child: Text("初始化登录"),onPressed: () async{
 
           var dic = await _tuyaPlugin.loginOrRegisterAccount(countryCode: "86",uid: _accountController.text,password: _pswController.text);
+          log("login Success：${dic}");
+          int homeid = dic!["homeId"];
+          List<Object?> arr = dic?["devices"];
+          if (arr.isNotEmpty) {
 
+            Map mdic = json.decode(json.encode(arr!.first));
+
+            var connect = await _tuyaPlugin.connectDeviceWithId(mdic["devId"]);
+            log("connected:${connect}");
+          }
 
 
         },),

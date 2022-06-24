@@ -35,7 +35,10 @@ static BlueToothManagerDelegate *instance = nil;
 
 - (void)bluetoothDidUpdateState:(BOOL)isPoweredOn {
     NSLog(@"蓝牙状态变化: %d", isPoweredOn ? 1 : 0);
-    self.blepowerBlock(isPoweredOn);
+    if (self.blepowerBlock != nil) {
+        self.blepowerBlock(isPoweredOn);
+    }
+    
 }
 
 - (void)didDiscoveryDeviceWithDeviceInfo:(TYBLEAdvModel *)deviceInfo {

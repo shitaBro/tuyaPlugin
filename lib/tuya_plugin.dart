@@ -66,6 +66,14 @@ class TuyaPlugin {
       ("startConfigBLEWifiDeviceWith",data);
     return dic?.cast<String,dynamic>();
   }
+  void startSearchDevice() {
+    _methodChannel.invokeMethod("startSearchDevice");
+  }
+  Future<bool> connectDeviceWithId(String devId) async{
+    var resu = await _methodChannel.invokeMethod("connectDeviceWithId",
+        {"devId":devId});
+    return resu == 1 || resu == true;
+  }
   @override
   Future<bool> removeDevice() async{
     bool resu = await _methodChannel.invokeMethod("removeDevice");
