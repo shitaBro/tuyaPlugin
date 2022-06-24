@@ -175,9 +175,9 @@
     __block NSString * devId;
     WeakSelf
     __strong typeof(weakSelf) strongSelf = weakSelf;
-    [BlueToothManagerDelegate sharedInstance].configDeviceWifiSuccess = ^(NSString * _Nonnull devid) {
+    [BlueToothManagerDelegate sharedInstance].configDeviceWifiSuccess = ^(BOOL isSuccess,NSString * _Nonnull devid) {
         devId = devid;
-        result(@{@"status":@true,@"msg":@"配网成功"});
+        result(@{@"status":@(isSuccess),@"msg":isSuccess ? @"配网成功":@"配网失败"});
         strongSelf->_device = [TuyaSmartDevice deviceWithDeviceId:devId];
         [strongSelf->_device setOfflineReminderStatus:true success:^(BOOL result) {
             NSLog(@"设置离线告警成功:%hhd",result);
