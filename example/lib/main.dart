@@ -62,6 +62,10 @@ class _MyAppState extends State<MyApp> {
             TextField(controller: _pswController,decoration: InputDecoration(
                 hintText: "inout account"
             )),
+            Container(child: TextButton(child: Text("扫描设备"),onPressed: () async{
+               _tuyaPlugin.startSearchDevice();
+
+            },),),
             Container(child: TextButton(child: Text("选择网络"),onPressed: () async{
             _ssid = await _tuyaPlugin.searchWifi();
 

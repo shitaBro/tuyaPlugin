@@ -177,7 +177,7 @@
     __strong typeof(weakSelf) strongSelf = weakSelf;
     [BlueToothManagerDelegate sharedInstance].configDeviceWifiSuccess = ^(NSString * _Nonnull devid) {
         devId = devid;
-        
+        result(@{@"status":@true,@"msg":@"配网成功"});
         strongSelf->_device = [TuyaSmartDevice deviceWithDeviceId:devId];
         [strongSelf->_device setOfflineReminderStatus:true success:^(BOOL result) {
             NSLog(@"设置离线告警成功:%hhd",result);
@@ -187,8 +187,8 @@
         strongSelf->_device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
     };
     [[TuyaSmartBLEWifiActivator sharedInstance] startConfigBLEWifiDeviceWithUUID:[dic jsonString:@"UUID"] homeId:[dic jsonLongLong:@"homeId"] productId:[dic jsonString:@"productId"] ssid:[dic jsonString:@"ssid"] password:[dic jsonString:@"password"] timeout:100 success:^{
-        NSLog(@"配网成功了");
-        result(@{@"status":@true,@"msg":@"配网成功"});
+        NSLog(@"start config method done");
+//        result(@{@"status":@true,@"msg":@"配网成功"});
         
        
         } failure:^{
