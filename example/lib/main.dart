@@ -24,8 +24,8 @@ class _MyAppState extends State<MyApp> {
 
   final _tuyaPlugin = TuyaPlugin.instance;
   TuyaDevModel? _devModel;
-  TextEditingController _accountController = TextEditingController(text: "a");
-  TextEditingController _pswController = TextEditingController(text: "b");
+  TextEditingController _accountController = TextEditingController(text: "470227667246649344");
+  TextEditingController _pswController = TextEditingController(text: "111111");
   String? _ssid;
   @override
   void initState() {
@@ -125,7 +125,7 @@ class _MyAppState extends State<MyApp> {
           List<Object?> arr = dic?["devices"];
           if (arr.isNotEmpty) {
 
-            Map mdic = json.decode(json.encode(arr!.first));
+            Map mdic = json.decode(json.encode(arr?.first));
 
             var connect = await _tuyaPlugin.connectDeviceWithId(mdic["devId"]);
             log("connected:${connect}");
