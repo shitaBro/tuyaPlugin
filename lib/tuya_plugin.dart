@@ -76,20 +76,20 @@ class TuyaPlugin {
   }
   @override
   Future<bool> removeDevice() async{
-    bool resu = await _methodChannel.invokeMethod("removeDevice");
-    return resu;
+    var  resu = await _methodChannel.invokeMethod("removeDevice") ;
+    return resu == 1 || resu == true;
   }
   @override
   Future<bool> resetFactory() async{
-    bool resu = await _methodChannel.invokeMethod("resetFactory") == 1;
-    return resu;
+    var resu = await _methodChannel.invokeMethod("resetFactory") ;
+    return resu == 1 || resu == true;
   }
   @override
   Future<bool> sendCommand(Map map) async{
 
     log("command str ${map}");
-    int? resu = await _methodChannel.invokeMethod("sendCommand",map);
-    return resu == 1;
+    var resu = await _methodChannel.invokeMethod("sendCommand",map);
+    return resu == 1 || resu == true;
   }
 
 }
