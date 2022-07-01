@@ -268,13 +268,13 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       public void onError(String code, String error) {
         Toast.makeText(appContext, "移除设备失败code:" + code + "err:" + error, Toast.LENGTH_SHORT).show();
         Log.i("remove device", "onError: "+ code + "err:" + error);
-        result.success(false);
+        result.success(0);
       }
 
       @Override
       public void onSuccess() {
         Log.i("remove device", "移除设备success: ");
-        result.success(true);
+        result.success(1);
       }
     });
   }
@@ -284,13 +284,13 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       public void onError(String code, String error) {
         Log.i(" reset factory", "onError: " + code + "err:"+error);
         Toast.makeText(appContext, "重置设备失败", Toast.LENGTH_SHORT).show();
-        result.success(false);
+        result.success(0);
       }
 
       @Override
       public void onSuccess() {
         Log.i("reset factory", "onSuccess: ");
-        result.success(true);
+        result.success(1);
       }
     });
   }

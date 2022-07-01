@@ -131,6 +131,7 @@
     NSLog(@"connect dev id:%@",devid);
     _device = [TuyaSmartDevice deviceWithDeviceId:devid];
     if (_device != nil) {
+        _device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
         result(@(true));
     }else {
         result(@(false));

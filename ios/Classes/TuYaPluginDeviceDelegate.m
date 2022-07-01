@@ -34,7 +34,7 @@ static TuYaPluginDeviceDelegate *instance = nil;
 
 - (void)device:(TuyaSmartDevice *)device dpsUpdate:(NSDictionary *)dps {
     // 设备的 dps 状态发生变化，刷新界面 UI
-    NSLog(@"设备的 dps 状态发生变化，刷新界面 UI");
+    NSLog(@"设备的 dps 状态发生变化，刷新界面 UI,%@",dps);
 }
 
 - (void)deviceInfoUpdate:(TuyaSmartDevice *)device {

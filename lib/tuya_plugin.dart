@@ -81,7 +81,7 @@ class TuyaPlugin {
   }
   @override
   Future<bool> resetFactory() async{
-    bool resu = await _methodChannel.invokeMethod("resetFactory");
+    bool resu = await _methodChannel.invokeMethod("resetFactory") == 1;
     return resu;
   }
   @override
