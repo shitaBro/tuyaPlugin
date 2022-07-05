@@ -59,6 +59,7 @@ static TuyaPlugin *instance = nil;
 }
 - (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     NSLog(@"did receive notification:%@",userInfo);
+    completionHandler(UIBackgroundFetchResultNoData);
     return true;
 }
 
