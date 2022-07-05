@@ -11,24 +11,57 @@
 @property(nonatomic, retain) FlutterMethodChannel *channel;
 @property (nonatomic,strong) NSArray * boolKeys;
 @end
+static TuyaPlugin *instance = nil;
 @implementation TuyaPlugin {
     FlutterEventSink _eventSink;
     long long _homeId;
     TuyaSmartDevice* _device;
     CLLocationManager *_locationManager;
 }
++ (instancetype)sharedInstance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (instance == nil) {
+            instance = [[self alloc]init];
+        }
+    });
+    return instance;
+}
++ (instancetype) allocWithZone:(struct _NSZone *)zone {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (instance == nil) {
+            instance = [super allocWithZone:zone];
+        }
+    });
+    return instance;
+}
+- (instancetype)copyWithZone:(NSZone *)zone
+{
+    return instance;
+}
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   FlutterMethodChannel* channel = [FlutterMethodChannel
       methodChannelWithName:@"tuya_plugin"
             binaryMessenger:[registrar messenger]];
     FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"tuya_event" binaryMessenger:[registrar messenger]];
-  TuyaPlugin* instance = [[TuyaPlugin alloc] init];
+  TuyaPlugin* instance = [TuyaPlugin sharedInstance];
     instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
     [eventChannel setStreamHandler:instance];
-    
+    [registrar addApplicationDelegate:instance];
 
 }
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    NSLog(@"did register token :%@",deviceToken.description);
+    [TuyaSmartSDK sharedInstance].deviceToken = deviceToken;
+}
+- (BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    NSLog(@"did receive notification:%@",userInfo);
+    return true;
+}
+
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
