@@ -49,6 +49,7 @@ static TuyaPlugin *instance = nil;
     instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
     [eventChannel setStreamHandler:instance];
+   
     [registrar addApplicationDelegate:instance];
 
 }

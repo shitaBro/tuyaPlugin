@@ -4,12 +4,20 @@ import android.util.Log;
 
 import com.tuya.smart.sdk.api.IDevListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TuyaDevListenser implements IDevListener {
 
     private  String tag = "tuyaDevice";
     @Override
     public void onDpUpdate(String devId, String dpStr) {
         Log.i(tag, "onDpUpdate: "+ devId + "dpstr:" + dpStr);
+        Map dic = new HashMap();
+        dic.put("devId",devId);
+        dic.put("dpStr",dpStr);
+
+
     }
 
     @Override

@@ -27,6 +27,8 @@ class _MyAppState extends State<MyApp> {
   TextEditingController _accountController = TextEditingController(text: "470227667246649344");
   TextEditingController _pswController = TextEditingController(text: "111111");
   String? _ssid;
+  bool? _mainOn;
+  bool? warnOn;
   @override
   void initState() {
     super.initState();
@@ -42,8 +44,21 @@ class _MyAppState extends State<MyApp> {
       log("model:${event}");
       _devModel = event;
     });
-  }
+    _tuyaPlugin.dpResult.listen((value) {
+      log("dp changed:${value}");
+    });
 
+  }
+  void getStatus() async {
+    var main = await _tuyaPlugin.getPushStatus();
+    log("mainOn:${_mainOn}");
+    var warn = await _tuyaPlugin.getPushStatusByType(0);
+    setState((){
+      _mainOn = main;
+      warnOn = warn;
+    });
+
+  }
 
 
   @override
@@ -70,6 +85,28 @@ class _MyAppState extends State<MyApp> {
             _ssid = await _tuyaPlugin.searchWifi();
 
             },),),
+            Container(
+              child: Row(
+                children: <Widget>[
+                  Text("总推送"),
+                  Switch(value: _mainOn ?? false, onChanged: (on) async{
+                    var suc = await _tuyaPlugin.setPushStatus(on ? 1:0);
+                    log("set main success:${suc}");
+                  }),
+                ],
+              ),
+            ),
+            Container(
+              child: Row(
+                children: <Widget>[
+                  Text("告警"),
+                  Switch(value: warnOn ?? false, onChanged: (on) async{
+                    var suc = await _tuyaPlugin.setPushStatusByType(0,on ? 1:0);
+                    log("set warn success:${suc}");
+                  }),
+                ],
+              ),
+            ),
             Container(
               child: TextButton(child: Text("开始配网"),onPressed: () {
                 if (_ssid?.isNotEmpty == true) {
@@ -129,6 +166,7 @@ class _MyAppState extends State<MyApp> {
 
             var connect = await _tuyaPlugin.connectDeviceWithId(mdic["devId"]);
             log("connected:${connect}");
+            getStatus();
           }
 
 

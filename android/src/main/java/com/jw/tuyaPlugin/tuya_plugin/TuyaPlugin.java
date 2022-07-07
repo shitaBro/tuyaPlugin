@@ -24,18 +24,23 @@ import com.tuya.smart.home.sdk.bean.HomeBean;
 import com.tuya.smart.home.sdk.bean.scene.SceneBean;
 import com.tuya.smart.home.sdk.callback.ITuyaHomeResultCallback;
 import com.tuya.smart.home.sdk.callback.ITuyaResultCallback;
+import com.tuya.smart.sdk.api.IDevListener;
 import com.tuya.smart.sdk.api.IMultiModeActivatorListener;
 import com.tuya.smart.sdk.api.IResultCallback;
 import com.tuya.smart.sdk.api.ITuyaActivatorGetToken;
+import com.tuya.smart.sdk.api.ITuyaDataCallback;
 import com.tuya.smart.sdk.api.ITuyaDevice;
 import com.tuya.smart.sdk.api.ITuyaSmartActivatorListener;
 import com.tuya.smart.sdk.bean.DeviceBean;
 import com.tuya.smart.sdk.bean.MultiModeActivatorBean;
+import com.tuya.smart.sdk.bean.push.PushStatusBean;
+import com.tuya.smart.sdk.bean.push.PushType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -51,13 +56,17 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
-  private MethodChannel channel;
+  MethodChannel channel;
   private Context appContext;
   private ITuyaDevice tuyaDevice;
   private List<String> boolKeys;
   private Activity mactivity;
   private long currentHomeId;
   private String productId; //设备id，第一次配网使用
+
+
+
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "tuya_plugin");
@@ -89,12 +98,99 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       startSearchDevice(call,result);
     }else if (call.method.equals("connectDeviceWithId")) {
       connectDeviceWithId(call, result);
+    }else if (call.method.equals("getPushStatus")) {
+      getPushStatus(call, result);
+    }else if (call.method.equals("getPushStatusByType")) {
+      getPushStatusByType(call, result);
+    }else if (call.method.equals("setPushStatus")){
+      setPushStatus(call, result);
+    }else if (call.method.equals("setPushStatusByType")) {
+      setPushStatusByType(call, result);
     }
     else {
       result.notImplemented();
     }
   }
+  public void setPushStatusByType(@NonNull MethodCall call, @NonNull Result result) {
+    Map json = (Map)call.arguments;
+    int isOpen = Integer.parseInt(json.get("isOpen").toString());
+    int row = Integer.parseInt(json.get(
+            "type").toString());
+    List<PushType> arr = new ArrayList<>();
+    arr.add(PushType.PUSH_ALARM);
+    arr.add(PushType.PUSH_FAMILY);
+    arr.add(PushType.PUSH_NOTIFY);
+    arr.add(PushType.PUSH_MARKETING);
+    TuyaHomeSdk.getPushInstance().setPushStatusByType(arr.get(row), row == 1,
+            new ITuyaDataCallback<Boolean>() {
+      @Override
+      public void onSuccess(Boolean res) {
+        Log.i("set type push", "onSuccess: "+res);
+        result.success(res);
+      }
 
+      @Override
+      public void onError(String errorCode, String errorMessage) {
+        Log.i("type noti set err", "onError: "+errorCode+"msg:"+errorMessage);
+        result.success(false);
+      }
+    });
+  }
+  public void setPushStatus(@NonNull MethodCall call, @NonNull Result result) {
+    Map json = (Map)call.arguments;
+    int isOpen = Integer.parseInt(json.get("isOpen").toString());
+    TuyaHomeSdk.getPushInstance().setPushStatus(isOpen == 1, new ITuyaDataCallback<Boolean>() {
+      @Override
+      public void onSuccess(Boolean res) {
+        Log.i("set main push", "onSuccess: "+res);
+        result.success(res);
+      }
+
+      @Override
+      public void onError(String errorCode, String errorMessage) {
+        Log.i("set push err", "onError: "+errorCode + "msg:" +errorMessage);
+        result.success(false);
+      }
+    });
+  }
+   public void getPushStatus(@NonNull MethodCall call, @NonNull Result result) {
+    TuyaHomeSdk.getPushInstance().getPushStatus(new ITuyaResultCallback<PushStatusBean>() {
+      @Override
+      public void onSuccess(PushStatusBean res) {
+        Log.i("main switch success", "onSuccess: "+res.getIsPushEnable());
+        result.success(res.getIsPushEnable().equals("1"));
+      }
+
+      @Override
+      public void onError(String errorCode, String errorMessage) {
+        Log.i("main switch err", "onError: " + errorCode + "msg:" + errorMessage);
+        result.success(false);
+      }
+    });
+  }
+  public void getPushStatusByType(@NonNull MethodCall call, @NonNull Result result) {
+    Map json = (Map)call.arguments;
+   int row = Integer.parseInt(json.get(
+            "type").toString());
+   List<PushType> arr = new ArrayList<>();
+   arr.add(PushType.PUSH_ALARM);
+   arr.add(PushType.PUSH_FAMILY);
+   arr.add(PushType.PUSH_NOTIFY);
+   arr.add(PushType.PUSH_MARKETING);
+    TuyaHomeSdk.getPushInstance().getPushStatusByType(arr.get(row),
+            new ITuyaDataCallback<Boolean>() {
+              @Override
+              public void onSuccess(Boolean res) {
+                result.success(res);
+              }
+
+              @Override
+              public void onError(String errorCode, String errorMessage) {
+                Log.i("type noti err", "onError: "+errorCode + "msg:" + errorMessage);
+                result.success(false);
+              }
+            });
+  }
   public void handleInitSdkCall(@NonNull MethodCall call, @NonNull Result result) {
     Map json = (Map)call.arguments;
     Log.i("init tuya sdk", "handleInitSdkCall: " + json);
@@ -185,7 +281,38 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   public void connectDeviceWithId(@NonNull MethodCall call,@NonNull Result result) {
     Map json = (Map)call.arguments;
     tuyaDevice = TuyaHomeSdk.newDeviceInstance(json.get("devId").toString());
-    tuyaDevice.registerDevListener(new TuyaDevListenser());
+    tuyaDevice.registerDevListener(new IDevListener() {
+      String tag = "tuyaDevice";
+      @Override
+      public void onDpUpdate(String devId, String dpStr) {
+        Log.i(tag, "onDpUpdate: "+ devId + "dpstr:" + dpStr);
+        Map dic = new HashMap();
+        dic.put("devId",devId);
+        dic.put("dpStr",dpStr);
+
+        channel.invokeMethod("DpUpdate",dic);
+      }
+
+      @Override
+      public void onRemoved(String devId) {
+        Log.i(tag, "onRemoved: "+devId);
+      }
+
+      @Override
+      public void onStatusChanged(String devId, boolean online) {
+        Log.i(tag, "onStatusChanged: " +devId + online);
+      }
+
+      @Override
+      public void onNetworkStatusChanged(String devId, boolean status) {
+        Log.i(tag, "onNetworkStatusChanged: " + devId + status);
+      }
+
+      @Override
+      public void onDevInfoUpdate(String devId) {
+        Log.i(tag, "onDevInfoUpdate: " + devId);
+      }
+    });
     result.success(tuyaDevice != null);
   }
   public void searchWifi (@NonNull MethodCall call, @NonNull Result result) {
@@ -336,4 +463,6 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   public void onDetachedFromActivity() {
 
   }
+
+
 }

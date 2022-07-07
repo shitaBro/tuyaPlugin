@@ -16,6 +16,8 @@ class TuyaPlugin {
   static TuyaPlugin get instance => _instance;
   PublishSubject<TuyaDevModel> _scanResult = PublishSubject<TuyaDevModel>();
   PublishSubject<TuyaDevModel> get scanResult => _scanResult;
+  PublishSubject<Map> _dpResult = PublishSubject();
+  PublishSubject<Map> get dpResult => _dpResult;
   Future<Map<String,dynamic>?> loginOrRegisterAccount({required String countryCode,required String uid,required String password}) async{
     Map? dic = await _methodChannel.invokeMapMethod<String,dynamic>("loginOrRegisterAccount",{"countryCode":countryCode,"uid":uid,"password":password});
     log("loginOrRegister :${dic}");
@@ -29,8 +31,11 @@ class TuyaPlugin {
         _scanResult.add(TuyaDevModel.fromJson(call.arguments.cast<String,dynamic>()));
         print("add signal success:${_scanResult}");
         
-        return ;
-        
+        break ;
+      case "DpUpdate":
+        print("收到dp更新回调----${call.arguments}");
+        _dpResult.add(call.arguments);
+        break;
     }
   }
 
@@ -89,6 +94,23 @@ class TuyaPlugin {
 
     log("command str ${map}");
     var resu = await _methodChannel.invokeMethod("sendCommand",map);
+    return resu == 1 || resu == true;
+  }
+  Future<bool> getPushStatus() async {
+    var resu = await _methodChannel.invokeMethod("getPushStatus");
+    return resu == 1 || resu == true;
+  }
+  Future<bool> getPushStatusByType(int type) async {
+    var resu = await _methodChannel.invokeMethod("getPushStatusByType",{"type":type});
+    return resu == 1 || resu == true;
+  }
+  Future<bool> setPushStatus(int isOpen) async {
+    var resu = await _methodChannel.invokeMethod("setPushStatus",
+        {"isOpen":isOpen});
+    return resu == 1 || resu == true;
+  }
+  Future<bool> setPushStatusByType(int type,int isOpen) async {
+    var resu = await _methodChannel.invokeMethod("setPushStatusByType",{"type":type,"isOpen":isOpen});
     return resu == 1 || resu == true;
   }
 
