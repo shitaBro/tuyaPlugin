@@ -86,10 +86,135 @@ static TuyaPlugin *instance = nil;
       [self startSearchDevice];
   }else if ([call.method isEqualToString:@"connectDeviceWithId"]) {
       [self connectDeviceWithId:call result:result];
+  }else if ([call.method isEqualToString:@"getPushStatus"]) {
+      [self getPushStatus:call result:result];
+  }else if ([call.method isEqualToString:@"getPushStatusByType"]) {
+      [self getPushStatusByType:call result:result];
+  }else if ([call.method isEqualToString:@"setPushStatus"]) {
+      [self setPushStatus:call result:result];
+  }else if([call.method isEqualToString:@"setPushStatusByType"]) {
+      [self setPushStatusByType:call result:result];
+  }else if ([call.method isEqualToString:@"getOfflineReminderStatus"]) {
+      [self getOfflineReminderStatus:call result:result];
+  }else if ([call.method isEqualToString:@"setOfflineReminderStatus"]) {
+      [self setOfflineReminderStatus:call result:result];
   }
   else  {
     result(FlutterMethodNotImplemented);
   }
+}
+- (void) setOfflineReminderStatus:(FlutterMethodCall*)call result:(FlutterResult) result {
+    NSInteger open = [call.arguments jsonInteger:@"isOn"];
+    if (_device != nil) {
+        [_device setOfflineReminderStatus:open == 1 success:^(BOOL res) {
+            result(@(res));
+        } failure:^(NSError *error) {
+            NSLog(@"setoffline err:%@",error.description);
+            result(@(false));
+        }];
+    }else {
+        NSLog(@"current device ==nil");
+    }
+}
+- (void)getOfflineReminderStatus:(FlutterMethodCall*)call result:(FlutterResult) result {
+    if (_device != nil) {
+        [_device getOfflineReminderStatusWithSuccess:^(BOOL res) {
+            result(@(res));
+                } failure:^(NSError *error) {
+                    NSLog(@"get offline remind err:%@",error.description);
+                    result(@(false));
+                }];
+    }else {
+        NSLog(@"iOS Current device == nil");
+    }
+}
+- (void)setPushStatusByType:(FlutterMethodCall*)call result:(FlutterResult) result {
+    NSInteger tag = [call.arguments jsonInteger:@"type"];
+    NSInteger open = [call.arguments jsonInteger:@"isOpen"];
+    if (tag == 0 ){
+        [[TuyaSmartSDK sharedInstance]setDevicePushStatusWithStauts:open == 1 success:^{
+            result(@(true));
+        } failure:^(NSError *error) {
+            NSLog(@"set warn noti err:%@",error.description);
+            result(@(false));
+        }];
+    }else if (tag == 1) {
+        [[TuyaSmartSDK sharedInstance]setFamilyPushStatusWithStauts:open == 1 success:^{
+            result(@(true));
+        } failure:^(NSError *error) {
+            NSLog(@"set family noti err:%@",error.description);
+            result(@(false));
+        }];
+    }else if (tag == 2) {
+        [[TuyaSmartSDK sharedInstance]setNoticePushStatusWithStauts:open == 1 success:^{
+            result(@(true));
+        } failure:^(NSError *error) {
+            NSLog(@"set sub noti err:%@",error.description);
+            result(@(false));
+        }];
+    }else if (tag == 4) {
+        [[TuyaSmartSDK sharedInstance]setMarketingPushStatusWithStauts:open == 1 success:^{
+            result(@(true));
+        } failure:^(NSError *error) {
+            NSLog(@"set market noti err:%@",error.description);
+            result(@(false));
+        }];
+    }
+}
+- (void)setPushStatus:(FlutterMethodCall*)call result:(FlutterResult) result {
+    NSInteger open = [call.arguments jsonInteger:@"isOpen"];
+    [[TuyaSmartSDK sharedInstance]setPushStatusWithStatus:open == 1 success:^{
+        result(@(true));
+    } failure:^(NSError *error) {
+        NSLog(@"set main push err:%@",error.description);
+        result(@(false));
+    }];
+}
+- (void)getPushStatus:(FlutterMethodCall*)call result:(FlutterResult) result {
+    [[TuyaSmartSDK sharedInstance]getPushStatusWithSuccess:^(BOOL res) {
+        result(@(res));
+        } failure:^(NSError *error) {
+            NSLog(@" get main push err:%@",error.description);
+            result(@(false));
+        }];
+}
+- (void)getPushStatusByType:(FlutterMethodCall*)call result:(FlutterResult) result {
+    NSInteger tag = [call.arguments jsonInteger:@"type"];
+    if (tag == 0) {
+        //告警
+        [[TuyaSmartSDK sharedInstance]getDevicePushStatusWithSuccess:^(BOOL res) {
+            result(@(res));
+            } failure:^(NSError *error) {
+                NSLog(@"get warn noti error:%@",error.description);
+                result(@(false));
+            }];
+    }else if (tag == 1) {
+        //家庭
+        [[TuyaSmartSDK sharedInstance]getFamilyPushStatusWithSuccess:^(BOOL res) {
+            result(@(res));
+                } failure:^(NSError *error) {
+                    NSLog(@"get family noti error:%@",error.description);
+                    result(@(false));
+                }];
+        
+    }else if (tag == 2) {
+        //通知
+        [[TuyaSmartSDK sharedInstance]getNoticePushStatusWithSuccess:^(BOOL res) {
+            result(@(res));
+                } failure:^(NSError *error) {
+                    NSLog(@"get sub noti error:%@",error.description);
+                    result(@(false));
+                }];
+    }else if (tag == 4 ){
+        //营销
+        [[TuyaSmartSDK sharedInstance]getMarketingPushStatusWithSuccess:^(BOOL res) {
+            result(@(res));
+                } failure:^(NSError *error) {
+                    NSLog(@"get market noti error:%@",error.description);
+                    result(@(false));
+                }];
+    }
+    
 }
 - (void)handleInitSdkCall:(FlutterMethodCall*)call reslut:(FlutterResult) result {
     NSString *key = [call.arguments jsonString:@"key"];
