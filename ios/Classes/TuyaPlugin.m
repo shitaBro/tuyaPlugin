@@ -8,7 +8,7 @@
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface TuyaPlugin()
-@property(nonatomic, retain) FlutterMethodChannel *channel;
+
 @property (nonatomic,strong) NSArray * boolKeys;
 @end
 static TuyaPlugin *instance = nil;
@@ -291,7 +291,7 @@ static TuyaPlugin *instance = nil;
     NSLog(@"connect dev id:%@",devid);
     _device = [TuyaSmartDevice deviceWithDeviceId:devid];
     if (_device != nil) {
-        _device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
+    _device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
         result(@(true));
     }else {
         result(@(false));

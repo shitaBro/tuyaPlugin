@@ -4,7 +4,7 @@
 //
 //  Created by Mac on 2022/5/31.
 //
-
+#import "TuyaPlugin.h"
 #import "TuYaPluginDeviceDelegate.h"
 static TuYaPluginDeviceDelegate *instance = nil;
 @implementation TuYaPluginDeviceDelegate
@@ -35,6 +35,8 @@ static TuYaPluginDeviceDelegate *instance = nil;
 - (void)device:(TuyaSmartDevice *)device dpsUpdate:(NSDictionary *)dps {
     // 设备的 dps 状态发生变化，刷新界面 UI
     NSLog(@"设备的 dps 状态发生变化，刷新界面 UI,%@",dps);
+    
+    [[TuyaPlugin sharedInstance].channel invokeMethod:@"DpUpdate" arguments:@{@"devId":device.deviceModel.devId,@"dpStr":dps.tysdk_JSONString}];
 }
 
 - (void)deviceInfoUpdate:(TuyaSmartDevice *)device {
