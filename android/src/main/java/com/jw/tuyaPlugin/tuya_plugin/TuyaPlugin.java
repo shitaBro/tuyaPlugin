@@ -63,7 +63,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   private Activity mactivity;
   private long currentHomeId;
   private String productId; //设备id，第一次配网使用
-
+  private String currentDevId;
 
 
 
@@ -106,9 +106,50 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       setPushStatus(call, result);
     }else if (call.method.equals("setPushStatusByType")) {
       setPushStatusByType(call, result);
+    }else if (call.method.equals("getOfflineReminderStatus")) {
+      getOfflineReminderStatus(call, result);
+    }else if (call.method.equals("setOfflineReminderStatus")) {
+      setOfflineReminderStatus(call, result);
     }
     else {
       result.notImplemented();
+    }
+  }
+  public void setOfflineReminderStatus(@NonNull MethodCall call, @NonNull Result result) {
+    if (tuyaDevice != null) {
+      Map json = (Map)call.arguments;
+      tuyaDevice.setOfflineReminderStatus(currentDevId, json.get("isOn").equals("1"), new IResultCallback() {
+        @Override
+        public void onError(String code, String error) {
+          Log.i("set offline", "onError: "+code + "msg:"+error);
+          result.success(false);
+        }
+
+        @Override
+        public void onSuccess() {
+          result.success(true);
+        }
+      });
+    }
+  }
+  public void getOfflineReminderStatus(@NonNull MethodCall call, @NonNull Result result) {
+    if (tuyaDevice != null) {
+      tuyaDevice.getOfflineReminderStatus(currentDevId, new ITuyaResultCallback<Boolean>() {
+        String offlineTag = "offlineremind";
+        @Override
+        public void onSuccess(Boolean res) {
+          Log.i(offlineTag, "onSuccess: "+ res);
+          result.success(res);
+        }
+
+        @Override
+        public void onError(String errorCode, String errorMessage) {
+          Log.i(offlineTag, "onError: "+errorCode + "msg:" + errorMessage);
+          result.success(false);
+        }
+      });
+    }else {
+      Toast.makeText(appContext, "设备未连接", Toast.LENGTH_SHORT).show();
     }
   }
   public void setPushStatusByType(@NonNull MethodCall call, @NonNull Result result) {
@@ -280,7 +321,8 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   }
   public void connectDeviceWithId(@NonNull MethodCall call,@NonNull Result result) {
     Map json = (Map)call.arguments;
-    tuyaDevice = TuyaHomeSdk.newDeviceInstance(json.get("devId").toString());
+    currentDevId =  json.get("devId").toString();
+    tuyaDevice = TuyaHomeSdk.newDeviceInstance(currentDevId);
     tuyaDevice.registerDevListener(new IDevListener() {
       String tag = "tuyaDevice";
       @Override
