@@ -113,5 +113,13 @@ class TuyaPlugin {
     var resu = await _methodChannel.invokeMethod("setPushStatusByType",{"type":type,"isOpen":isOpen});
     return resu == 1 || resu == true;
   }
+  Future<bool> getOfflineReminderStatus() async {
+    var resu = await _methodChannel.invokeMethod("getOfflineReminderStatus");
+    return resu == 1 || resu == true;
+  }
+  Future<bool> setOfflineReminderStatus(int isOn) async {
+    var resu = await _methodChannel.invokeMethod("setOfflineReminderStatus",{"isOn":isOn});
+    return resu == 1 || resu == true;
+  }
 
 }

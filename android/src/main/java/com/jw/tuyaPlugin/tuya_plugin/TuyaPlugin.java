@@ -118,7 +118,8 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
   public void setOfflineReminderStatus(@NonNull MethodCall call, @NonNull Result result) {
     if (tuyaDevice != null) {
       Map json = (Map)call.arguments;
-      tuyaDevice.setOfflineReminderStatus(currentDevId, json.get("isOn").equals("1"), new IResultCallback() {
+      tuyaDevice.setOfflineReminderStatus(currentDevId, json.get("isOn").toString().equals("1"),
+              new IResultCallback() {
         @Override
         public void onError(String code, String error) {
           Log.i("set offline", "onError: "+code + "msg:"+error);
