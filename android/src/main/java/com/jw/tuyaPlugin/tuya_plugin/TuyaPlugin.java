@@ -127,7 +127,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
 
       @Override
       public void onSuccess() {
-        Log.i("set alias", "onSuccess: ");
+        Log.i("set tuya alias", "onSuccess: " + json.get("alias").toString());
       }
     });
   }
