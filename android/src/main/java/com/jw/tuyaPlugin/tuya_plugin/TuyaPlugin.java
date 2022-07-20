@@ -110,10 +110,26 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       getOfflineReminderStatus(call, result);
     }else if (call.method.equals("setOfflineReminderStatus")) {
       setOfflineReminderStatus(call, result);
+    }else if (call.method.equals("setAlias")) {
+      setAlias(call,result);
     }
     else {
       result.notImplemented();
     }
+  }
+  public void setAlias(@NonNull MethodCall call, @NonNull Result result) {
+    Map json = (Map) call.arguments;
+    TuyaHomeSdk.getPushInstance().registerDevice(json.get("alias").toString(), "umeng", new IResultCallback() {
+      @Override
+      public void onError(String code, String error) {
+        Log.i("set alias", "onError: " + code + "err："+ error);
+      }
+
+      @Override
+      public void onSuccess() {
+        Log.i("set alias", "onSuccess: ");
+      }
+    });
   }
   public void setOfflineReminderStatus(@NonNull MethodCall call, @NonNull Result result) {
     if (tuyaDevice != null) {

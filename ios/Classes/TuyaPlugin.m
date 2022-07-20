@@ -105,6 +105,7 @@ static TuyaPlugin *instance = nil;
     result(FlutterMethodNotImplemented);
   }
 }
+
 - (void) setOfflineReminderStatus:(FlutterMethodCall*)call result:(FlutterResult) result {
     NSInteger open = [call.arguments jsonInteger:@"isOn"];
     if (_device != nil) {

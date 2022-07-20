@@ -124,5 +124,8 @@ class TuyaPlugin {
   Future removeIosAccessToken() async {
     await _methodChannel.invokeMethod("removeIosAccessToken");
   }
+  Future setAlias(String alias) async {
+    await _methodChannel.invokeMethod("setAlias",{"alias":alias});
+  }
 
 }
