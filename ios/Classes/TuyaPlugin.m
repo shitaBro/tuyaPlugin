@@ -98,6 +98,8 @@ static TuyaPlugin *instance = nil;
       [self getOfflineReminderStatus:call result:result];
   }else if ([call.method isEqualToString:@"setOfflineReminderStatus"]) {
       [self setOfflineReminderStatus:call result:result];
+  }else if ([call.method isEqualToString:@"removeIosAccessToken"]) {
+      [[TuyaSmartSDK sharedInstance]setDeviceToken:nil withError:nil];
   }
   else  {
     result(FlutterMethodNotImplemented);
