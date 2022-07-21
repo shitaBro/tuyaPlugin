@@ -123,6 +123,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       @Override
       public void onError(String code, String error) {
         Log.i("set alias", "onError: " + code + "err："+ error);
+
       }
 
       @Override
@@ -255,6 +256,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
     TuyaHomeSdk.init((Application) appContext,json.get("key").toString(),json.get("secret").toString());
     boolKeys = (List<String>)json.get("boolKeys");
     Log.i("bool keys", "handleInitSdkCall: " + boolKeys);
+    TuyaHomeSdk.setDebugMode(true);
   }
   public void loginOrRegisterAccount(@NonNull MethodCall call, @NonNull Result result) {
     Map json = (Map)call.arguments;
@@ -263,6 +265,18 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       public void onSuccess(User user, long homeId) {
         Log.i("登录", "user login success homeid: " + homeId);
         currentHomeId = homeId;
+//        TuyaHomeSdk.newHomeInstance(homeId).dismissHome(new IResultCallback() {
+//          @Override
+//          public void onSuccess() {
+//            // do something
+//            Log.i("注销房屋成功", "get home info success: " );
+//          }
+//          @Override
+//          public void onError(String code, String error) {
+//            // do something
+//            Log.i("注销房屋失败", "code： "+code + "error:"+error );
+//          }
+//        });
         TuyaHomeSdk.newHomeInstance(homeId).getHomeDetail(new ITuyaHomeResultCallback() {
           @Override
           public void onSuccess(HomeBean bean) {
