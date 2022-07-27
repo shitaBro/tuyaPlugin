@@ -17,6 +17,7 @@ import com.tuya.smart.android.ble.api.ScanDeviceBean;
 import com.tuya.smart.android.ble.api.ScanType;
 import com.tuya.smart.android.ble.api.TyBleScanResponse;
 import com.tuya.smart.android.user.api.ILoginCallback;
+import com.tuya.smart.android.user.api.ILogoutCallback;
 import com.tuya.smart.android.user.api.IUidLoginCallback;
 import com.tuya.smart.android.user.bean.User;
 import com.tuya.smart.home.sdk.TuyaHomeSdk;
@@ -112,6 +113,18 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
       setOfflineReminderStatus(call, result);
     }else if (call.method.equals("setAlias")) {
       setAlias(call,result);
+    }else if (call.method.equals("logOut")) {
+      TuyaHomeSdk.getUserInstance().logout(new ILogoutCallback() {
+        @Override
+        public void onSuccess() {
+          Log.i("tuya logout", "onSuccess: ");
+        }
+
+        @Override
+        public void onError(String code, String error) {
+          Log.i("tuya logout", "onError: "+code + "err:"+error);
+        }
+      });
     }
     else {
       result.notImplemented();

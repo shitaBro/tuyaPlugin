@@ -121,8 +121,8 @@ class TuyaPlugin {
     var resu = await _methodChannel.invokeMethod("setOfflineReminderStatus",{"isOn":isOn});
     return resu == 1 || resu == true;
   }
-  Future iOSLogOut() async {
-    await _methodChannel.invokeMethod("iOSLogOut");
+  Future logOut() async {
+    await _methodChannel.invokeMethod("logOut");
   }
   Future setAlias(String alias) async {
     await _methodChannel.invokeMethod("setAlias",{"alias":alias});

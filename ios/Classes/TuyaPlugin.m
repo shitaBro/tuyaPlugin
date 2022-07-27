@@ -98,7 +98,7 @@ static TuyaPlugin *instance = nil;
       [self getOfflineReminderStatus:call result:result];
   }else if ([call.method isEqualToString:@"setOfflineReminderStatus"]) {
       [self setOfflineReminderStatus:call result:result];
-  }else if ([call.method isEqualToString:@"iOSLogOut"]) {
+  }else if ([call.method isEqualToString:@"logOut"]) {
       [[TuyaSmartUser sharedInstance]loginOut:^{
           NSLog(@"tuya user logout success");
             } failure:^(NSError *error) {
