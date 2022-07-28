@@ -448,6 +448,17 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
                     Log.i("device set wifi success", "onSuccess: " + deviceBean.toString());
                     String devid =  deviceBean.getDevId();
                     tuyaDevice = TuyaHomeSdk.newDeviceInstance(devid);
+                    tuyaDevice.setOfflineReminderStatus(devid, true, new IResultCallback() {
+                      @Override
+                      public void onError(String code, String error) {
+                        Log.i("init set offline", "onError: "+code + "err:"+error);
+                      }
+
+                      @Override
+                      public void onSuccess() {
+                        Log.i("init set offline", "onSuccess: ");
+                      }
+                    });
                     Map<String,Object> dic = new HashMap<String,Object>();
                     dic.put("status",1);
                     dic.put("msg","配网成功");
