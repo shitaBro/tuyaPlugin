@@ -231,6 +231,7 @@ static TuyaPlugin *instance = nil;
     [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
     [BlueToothManagerDelegate sharedInstance].modelBlock = ^(TYBLEAdvModel * _Nonnull mo) {
         [_channel invokeMethod:@"ScanResult" arguments:@{@"homeId":@(_homeId),@"uuid":mo.uuid,@"productId":mo.productId,@"mac":mo.mac,@"isActive":@(mo.isActive),@"bleType":@(mo.bleType),@"isSupport5G":@(mo.isSupport5G),@"isProuductKey":@(mo.isProuductKey),@"bleProtocolV":@(mo.bleProtocolV),@"isQRCodeDevice":@(mo.isQRCodeDevice),@"isSupportMultiUserShare":@(mo.isSupportMultiUserShare)}];
+        [[TuyaSmartBLEManager sharedInstance] stopListening:true];
     };
     
 }

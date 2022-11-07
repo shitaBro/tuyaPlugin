@@ -360,6 +360,8 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
         dic.put("bleType",bean.getDeviceType());
         dic.put("address",bean.getAddress());
         channel.invokeMethod("ScanResult",dic);
+        TuyaHomeSdk.getBleOperator().stopLeScan();
+
       }
     });
   }
