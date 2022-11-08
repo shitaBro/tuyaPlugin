@@ -26,6 +26,7 @@ class _MyAppState extends State<MyApp> {
   TuyaDevModel? _devModel;
   TextEditingController _accountController = TextEditingController(text: "470227667246649344");
   TextEditingController _pswController = TextEditingController(text: "111111");
+  TextEditingController _ssidPswCon = TextEditingController(text: "88888888");
   String? _ssid;
   bool? _mainOn;
   bool? warnOn;
@@ -77,6 +78,9 @@ class _MyAppState extends State<MyApp> {
             TextField(controller: _pswController,decoration: InputDecoration(
                 hintText: "inout account"
             )),
+            TextField(controller: _ssidPswCon,decoration: InputDecoration(
+                hintText: "inout ssid psw"
+            )),
             Container(child: TextButton(child: Text("扫描设备"),onPressed: () async{
                _tuyaPlugin.startSearchDevice();
 
@@ -112,11 +116,14 @@ class _MyAppState extends State<MyApp> {
                 if (_ssid?.isNotEmpty == true) {
                   log("ssid:${_ssid}");
                   _tuyaPlugin.startConfigBLEWifiDeviceWith(UUID: _devModel?.uuid ?? "", homeId: _devModel?.homeId ?? 0,productId:
-                      _devModel?.productId ?? "",ssid: _ssid! ,password: "88888888",bleType: _devModel?.bleType,address:
+                      _devModel?.productId ?? "",ssid: _ssid! ,password:
+                  _ssidPswCon.text,
+                      bleType: _devModel?.bleType,address:
                       _devModel?.address,mac: _devModel?.mac);
                 }
               },),
             ),
+
             Container(
               child: TextButton(child: Text("普通模式"),onPressed: (){
                 _tuyaPlugin.sendCommand({"2":"normal"});

@@ -360,7 +360,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
         dic.put("bleType",bean.getDeviceType());
         dic.put("address",bean.getAddress());
         channel.invokeMethod("ScanResult",dic);
-        TuyaHomeSdk.getBleOperator().stopLeScan();
+
 
       }
     });
@@ -466,6 +466,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
                     dic.put("msg","配网成功");
                     dic.put("devId",devid);
                     result.success(dic);
+                    TuyaHomeSdk.getBleOperator().stopLeScan();
                   }
 
                   @Override
@@ -476,6 +477,7 @@ public class TuyaPlugin implements FlutterPlugin, MethodCallHandler,ActivityAwar
                     dic.put("status",0);
                     dic.put("msg","配网失败了");
                     result.success(dic);
+                    TuyaHomeSdk.getBleOperator().stopLeScan();
                   }
                 });
       }

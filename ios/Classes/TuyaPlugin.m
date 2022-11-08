@@ -45,6 +45,7 @@ static TuyaPlugin *instance = nil;
       methodChannelWithName:@"tuya_plugin"
             binaryMessenger:[registrar messenger]];
     FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"tuya_event" binaryMessenger:[registrar messenger]];
+    [[TuyaSmartSDK sharedInstance]setDebugMode:true];
   TuyaPlugin* instance = [TuyaPlugin sharedInstance];
     instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
@@ -228,11 +229,7 @@ static TuyaPlugin *instance = nil;
     NSString *sercert = [call.arguments jsonString:@"secret"];
     self.boolKeys = [call.arguments jsonArray:@"boolKeys"];
     [[TuyaSmartSDK sharedInstance] startWithAppKey:key secretKey:sercert];
-    [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
-    [BlueToothManagerDelegate sharedInstance].modelBlock = ^(TYBLEAdvModel * _Nonnull mo) {
-        [_channel invokeMethod:@"ScanResult" arguments:@{@"homeId":@(_homeId),@"uuid":mo.uuid,@"productId":mo.productId,@"mac":mo.mac,@"isActive":@(mo.isActive),@"bleType":@(mo.bleType),@"isSupport5G":@(mo.isSupport5G),@"isProuductKey":@(mo.isProuductKey),@"bleProtocolV":@(mo.bleProtocolV),@"isQRCodeDevice":@(mo.isQRCodeDevice),@"isSupportMultiUserShare":@(mo.isSupportMultiUserShare)}];
-        [[TuyaSmartBLEManager sharedInstance] stopListening:true];
-    };
+    
     
 }
 - (void)loginOrRegisterAccount:(FlutterMethodCall*)call result:(FlutterResult) result {
@@ -288,11 +285,24 @@ static TuyaPlugin *instance = nil;
         }];
 }
 - (void)startSearchDevice {
-    [BlueToothManagerDelegate sharedInstance].blepowerBlock = ^(BOOL powerOn) {
+//    [BlueToothManagerDelegate sharedInstance].blepowerBlock = ^(BOOL powerOn) {
+//
+//    };
+    [TuyaSmartBLEManager sharedInstance].delegate = [BlueToothManagerDelegate sharedInstance];
+    [BlueToothManagerDelegate sharedInstance].modelBlock = ^(TYBLEAdvModel * _Nonnull mo) {
+        [_channel invokeMethod:@"ScanResult" arguments:@{@"homeId":@(_homeId),@"uuid":mo.uuid,@"productId":mo.productId,@"mac":mo.mac,@"isActive":@(mo.isActive),@"bleType":@(mo.bleType),@"isSupport5G":@(mo.isSupport5G),@"isProuductKey":@(mo.isProuductKey),@"bleProtocolV":@(mo.bleProtocolV),@"isQRCodeDevice":@(mo.isQRCodeDevice),@"isSupportMultiUserShare":@(mo.isSupportMultiUserShare)}];
+//        [self stopSearchDevice];
         
     };
     
     [[TuyaSmartBLEManager sharedInstance]startListening:true];
+    NSLog(@"开始扫描设备");
+}
+- (void)stopSearchDevice {
+    
+    [TuyaSmartBLEManager sharedInstance].delegate = nil;
+    [[TuyaSmartBLEManager sharedInstance] stopListening:false];
+    NSLog(@"停止扫描设备");
 }
 - (void)connectDeviceWithId:(FlutterMethodCall*)call result:(FlutterResult) result {
     NSString * devid = [call.arguments jsonString:@"devId"];
@@ -339,6 +349,7 @@ static TuyaPlugin *instance = nil;
 //        }];
 }
 - (void)startConfigBLEWifiDeviceWith:(FlutterMethodCall*)call result:(FlutterResult) result {
+    NSLog(@"开始配网");
     NSDictionary *dic = call.arguments;
     [TuyaSmartBLEWifiActivator sharedInstance].bleWifiDelegate = [BlueToothManagerDelegate sharedInstance];
     __block NSString * devId;
@@ -354,8 +365,9 @@ static TuyaPlugin *instance = nil;
                     NSLog(@"设置离线告警错误：%@",error.description);
                 }];
         strongSelf->_device.delegate = [TuYaPluginDeviceDelegate sharedInstance];
+        [self stopSearchDevice];
     };
-    [[TuyaSmartBLEWifiActivator sharedInstance] startConfigBLEWifiDeviceWithUUID:[dic jsonString:@"UUID"] homeId:[dic jsonLongLong:@"homeId"] productId:[dic jsonString:@"productId"] ssid:[dic jsonString:@"ssid"] password:[dic jsonString:@"password"] timeout:100 success:^{
+    [[TuyaSmartBLEWifiActivator sharedInstance] startConfigBLEWifiDeviceWithUUID:[dic jsonString:@"UUID"] homeId:[dic jsonLongLong:@"homeId"] productId:[dic jsonString:@"productId"] ssid:[dic jsonString:@"ssid"] password:[dic jsonString:@"password"] timeout:60 success:^{
         NSLog(@"start config method done");
 //        result(@{@"status":@true,@"msg":@"配网成功"});
         
