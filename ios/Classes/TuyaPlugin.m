@@ -45,7 +45,7 @@ static TuyaPlugin *instance = nil;
       methodChannelWithName:@"tuya_plugin"
             binaryMessenger:[registrar messenger]];
     FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"tuya_event" binaryMessenger:[registrar messenger]];
-    [[TuyaSmartSDK sharedInstance]setDebugMode:true];
+//    [[TuyaSmartSDK sharedInstance]setDebugMode:true];
   TuyaPlugin* instance = [TuyaPlugin sharedInstance];
     instance.channel = channel;
   [registrar addMethodCallDelegate:instance channel:channel];
